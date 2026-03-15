@@ -176,6 +176,14 @@ describe('IncomePage', () => {
     expect(screen.getByText('Export CSV')).toBeInTheDocument();
   });
 
+  it('"Export CSV" button links to /api/income/export', async () => {
+    await act(async () => {
+      render(<IncomePage />);
+    });
+    const exportLink = screen.getByText('Export CSV').closest('a');
+    expect(exportLink).toHaveAttribute('href', '/api/income/export');
+  });
+
   it('fetches and displays income entries', async () => {
     await act(async () => {
       render(<IncomePage />);

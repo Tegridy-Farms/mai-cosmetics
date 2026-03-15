@@ -162,6 +162,14 @@ describe('ExpensesPage', () => {
     expect(screen.getByText('Export CSV')).toBeInTheDocument();
   });
 
+  it('"Export CSV" button links to /api/expenses/export', async () => {
+    await act(async () => {
+      render(<ExpensesPage />);
+    });
+    const exportLink = screen.getByText('Export CSV').closest('a');
+    expect(exportLink).toHaveAttribute('href', '/api/expenses/export');
+  });
+
   it('fetches and displays expense entries', async () => {
     await act(async () => {
       render(<ExpensesPage />);

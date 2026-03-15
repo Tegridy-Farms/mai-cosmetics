@@ -104,7 +104,7 @@ export default function ExpensesPage() {
           <Link href="/expenses/new">
             <Button variant="primary">+ Add Expense</Button>
           </Link>
-          <a href="#">
+          <a href="/api/expenses/export">
             <Button variant="ghost">Export CSV</Button>
           </a>
         </div>
