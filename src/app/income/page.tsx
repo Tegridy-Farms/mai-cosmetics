@@ -113,7 +113,7 @@ export default function IncomePage() {
           <Link href="/income/new">
             <Button variant="primary">+ Add Income</Button>
           </Link>
-          <a href="#">
+          <a href="/api/income/export">
             <Button variant="ghost">Export CSV</Button>
           </a>
         </div>
