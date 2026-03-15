@@ -11,7 +11,7 @@ async function getServiceTypes(): Promise<ServiceType[]> {
     const res = await fetch(`${baseUrl}/api/service-types`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
-    return data.service_types ?? [];
+    return Array.isArray(data) ? data : (data.service_types ?? []);
   } catch {
     return [];
   }
