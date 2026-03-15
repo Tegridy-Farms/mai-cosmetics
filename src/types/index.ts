@@ -1,43 +1,62 @@
-// ─── Service Types ───────────────────────────────────────────────────────────
-
 export interface ServiceType {
   id: number;
   name: string;
   created_at?: string;
 }
 
-// ─── Income Entries ──────────────────────────────────────────────────────────
-
 export interface IncomeEntry {
   id: number;
-  date: string;
+  service_name: string;
   service_type_id: number;
-  service_type?: ServiceType;
+  date: string;
+  duration_minutes: number;
   amount: number;
-  notes?: string;
-  created_at?: string;
+  created_at: string;
 }
-
-// ─── Expense Entries ─────────────────────────────────────────────────────────
 
 export interface ExpenseEntry {
   id: number;
+  description: string;
+  category: 'equipment' | 'materials' | 'consumables' | 'other';
   date: string;
-  category: string;
   amount: number;
-  notes?: string;
-  created_at?: string;
+  created_at: string;
 }
 
-// ─── Convenience re-exports ──────────────────────────────────────────────────
+export interface ServiceTypeMetric {
+  name: string;
+  total_sessions: number;
+  total_hours: number;
+  gross_income: number;
+  expense_share: number;
+  net_income: number;
+}
 
-export type ServiceTypeName =
-  | 'Manicure'
-  | 'Pedicure'
-  | 'Gel Nails'
-  | 'Acrylic Nails'
-  | 'Nail Art'
-  | 'Eyebrow Shaping'
-  | 'Eyelash Treatment'
-  | 'Facial'
-  | 'Other';
+export interface DashboardMetrics {
+  gross_income: number;
+  total_expenses: number;
+  net_income: number;
+  net_per_hour: number;
+  by_service_type: ServiceTypeMetric[];
+}
+
+export interface MonthlyTrend {
+  month: string;
+  gross: number;
+  expenses: number;
+  net: number;
+}
+
+export interface FilterState {
+  service_type_id?: number;
+  category?: string;
+  date_from?: string;
+  date_to?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
