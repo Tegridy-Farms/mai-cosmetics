@@ -141,12 +141,14 @@ describe('POST /api/income', () => {
 // ---------------------------------------------------------------------------
 describe('GET /api/income', () => {
   it('returns 200 with paginated data', async () => {
-    mockQuery
-      .mockResolvedValueOnce([{ total: '3' }])
-      .mockResolvedValueOnce([
-        { id: 1, service_name: 'Manicure', date: '2024-03-01', amount: 45 },
-        { id: 2, service_name: 'Pedicure', date: '2024-02-28', amount: 55 },
-      ]);
+    mockSql
+      .mockResolvedValueOnce({ rows: [{ total: '3' }] })
+      .mockResolvedValueOnce({
+        rows: [
+          { id: 1, service_name: 'Manicure', date: '2024-03-01', amount: 45 },
+          { id: 2, service_name: 'Pedicure', date: '2024-02-28', amount: 55 },
+        ],
+      });
 
     const response = await getIncome(new Request('http://localhost/api/income'));
 
@@ -159,9 +161,9 @@ describe('GET /api/income', () => {
   });
 
   it('applies page param correctly', async () => {
-    mockQuery
-      .mockResolvedValueOnce([{ total: '25' }])
-      .mockResolvedValueOnce([]);
+    mockSql
+      .mockResolvedValueOnce({ rows: [{ total: '25' }] })
+      .mockResolvedValueOnce({ rows: [] });
 
     const response = await getIncome(new Request('http://localhost/api/income?page=2'));
 
@@ -179,9 +181,9 @@ describe('GET /api/income', () => {
   });
 
   it('accepts service_type_id filter', async () => {
-    mockQuery
-      .mockResolvedValueOnce([{ total: '1' }])
-      .mockResolvedValueOnce([{ id: 3, service_name: 'Gel Nails' }]);
+    mockSql
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 3, service_name: 'Gel Nails' }] });
 
     const response = await getIncome(
       new Request('http://localhost/api/income?service_type_id=3')
@@ -341,11 +343,13 @@ describe('POST /api/expenses', () => {
 // ---------------------------------------------------------------------------
 describe('GET /api/expenses', () => {
   it('returns 200 with paginated data', async () => {
-    mockQuery
-      .mockResolvedValueOnce([{ total: '2' }])
-      .mockResolvedValueOnce([
-        { id: 1, description: 'Supplies', category: 'consumables', date: '2024-03-01', amount: 25 },
-      ]);
+    mockSql
+      .mockResolvedValueOnce({ rows: [{ total: '2' }] })
+      .mockResolvedValueOnce({
+        rows: [
+          { id: 1, description: 'Supplies', category: 'consumables', date: '2024-03-01', amount: 25 },
+        ],
+      });
 
     const response = await getExpenses(new Request('http://localhost/api/expenses'));
 
@@ -357,9 +361,9 @@ describe('GET /api/expenses', () => {
   });
 
   it('accepts category filter', async () => {
-    mockQuery
-      .mockResolvedValueOnce([{ total: '1' }])
-      .mockResolvedValueOnce([{ id: 1, description: 'Equipment', category: 'equipment' }]);
+    mockSql
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 1, description: 'Equipment', category: 'equipment' }] });
 
     const response = await getExpenses(
       new Request('http://localhost/api/expenses?category=equipment')

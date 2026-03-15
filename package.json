@@ -42,6 +42,13 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", {
+        "tsconfig": {
+          "jsx": "react-jsx"
+        }
+      }]
+    },
     "collectCoverage": true,
     "coverageDirectory": "coverage",
     "coverageReporters": ["text", "lcov"],
