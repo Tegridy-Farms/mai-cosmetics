@@ -4,7 +4,7 @@
  */
 export const t = {
   nav: {
-    dashboard: 'לוח בקרה',
+    dashboard: 'דאשבורד',
     income: 'הכנסות',
     expenses: 'הוצאות',
     serviceTypes: 'סוגי שירות',
@@ -60,7 +60,7 @@ export const t = {
     descriptionRequired: 'נדרש תיאור',
     categoryRequired: 'נדרשת קטגוריה',
     save: 'שמירה',
-    backToDashboard: 'חזרה ללוח הבקרה',
+    backToDashboard: 'חזרה לדאשבורד',
     customerOptional: 'אופציונלי',
   },
   entries: {
@@ -111,8 +111,8 @@ export const t = {
     addIncome: 'הוספת הכנסה',
     addExpense: 'הוספת הוצאה',
     exportCsv: 'ייצוא CSV',
-    breadcrumbLogIncome: 'לוח בקרה → רישום הכנסה',
-    breadcrumbLogExpense: 'לוח בקרה → רישום הוצאה',
+    breadcrumbLogIncome: 'דאשבורד → רישום הכנסה',
+    breadcrumbLogExpense: 'דאשבורד → רישום הוצאה',
     logIncome: 'רישום הכנסה',
     logExpense: 'רישום הוצאה',
   },

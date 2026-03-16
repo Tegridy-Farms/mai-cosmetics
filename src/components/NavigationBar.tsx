@@ -3,14 +3,22 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Banknote,
+  Receipt,
+  Users,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 import { t } from "@/lib/translations";
 
-const navItems = [
-  { label: t.nav.dashboard, href: "/" },
-  { label: t.nav.income, href: "/income" },
-  { label: t.nav.expenses, href: "/expenses" },
-  { label: t.nav.customers, href: "/customers" },
-  { label: t.nav.serviceTypes, href: "/service-types" },
+const navItems: { label: string; href: string; icon: LucideIcon }[] = [
+  { label: t.nav.dashboard, href: "/", icon: LayoutDashboard },
+  { label: t.nav.income, href: "/income", icon: Banknote },
+  { label: t.nav.expenses, href: "/expenses", icon: Receipt },
+  { label: t.nav.customers, href: "/customers", icon: Users },
+  { label: t.nav.serviceTypes, href: "/service-types", icon: Sparkles },
 ];
 
 export function NavigationBar() {
@@ -77,12 +85,17 @@ export function NavigationBar() {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`relative flex-1 flex flex-col items-center justify-center gap-1 min-h-[52px] min-w-[56px] py-2 transition-all duration-200 touch-manipulation active:scale-95 ${
+                className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-[52px] min-w-[56px] py-2 transition-all duration-200 touch-manipulation active:scale-95 ${
                   isActive
                     ? "text-primary"
                     : "text-text-muted/80 hover:text-text-muted"
                 }`}
               >
+                <item.icon
+                  size={22}
+                  strokeWidth={isActive ? 2.5 : 1.8}
+                  aria-hidden
+                />
                 <span
                   className={`text-[11px] font-medium ${
                     isActive ? "font-semibold" : "font-medium"
@@ -90,12 +103,6 @@ export function NavigationBar() {
                 >
                   {item.label}
                 </span>
-                {isActive && (
-                  <span
-                    className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
-                    aria-hidden
-                  />
-                )}
               </Link>
             );
           })}
