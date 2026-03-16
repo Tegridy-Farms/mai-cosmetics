@@ -31,7 +31,7 @@ export function ToastContainer({ toasts }: ToastContainerProps) {
 
   return (
     <div
-      className="fixed bottom-4 end-4 z-50 flex flex-col gap-2"
+      className="fixed bottom-[calc(4rem+4px+env(safe-area-inset-bottom))] end-4 start-4 sm:start-auto z-50 flex flex-col gap-2 max-w-[calc(100vw-2rem)] sm:max-w-sm"
       aria-live="polite"
       role="status"
     >

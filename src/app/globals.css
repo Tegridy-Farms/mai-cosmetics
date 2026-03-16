@@ -16,3 +16,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile touch optimizations */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}

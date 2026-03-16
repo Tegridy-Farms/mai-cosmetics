@@ -95,9 +95,9 @@ export default function ExpensesPage() {
   };
 
   return (
-    <div className="max-w-[1200px] px-8 py-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-[30px] font-bold text-text-primary">{t.pages.expenseEntries}</h1>
+    <div className="max-w-[1200px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">{t.pages.expenseEntries}</h1>
         <div className="flex gap-2">
           <Link href="/expenses/new">
             <Button variant="primary">+ {t.pages.addExpense}</Button>
@@ -108,8 +108,8 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      <div className="bg-surface border border-border rounded-xl shadow-sm">
-        <div className="p-4 border-b border-border">
+      <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="p-3 sm:p-4 border-b border-border">
           <FilterBar
             variant="expense"
             filters={filters}

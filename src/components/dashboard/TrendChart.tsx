@@ -34,7 +34,7 @@ export function TrendChart({ data, isLoading = false }: TrendChartProps) {
       : 'no data';
 
   return (
-    <figure className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+    <figure className="bg-surface border border-border rounded-xl p-4 sm:p-6 shadow-sm overflow-hidden">
       <figcaption className="sr-only">
         {`Monthly gross income, expenses, and net income for ${rangeLabel}`}
       </figcaption>

@@ -23,7 +23,7 @@ const SKELETON_ROWS = 5;
 
 export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-sm text-start">
         <thead className="border-b border-border">
           <tr>
@@ -69,7 +69,7 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
                   <button
                     aria-label={`מחקי הוצאה: ${entry.description}, ${formatDate(entry.date)}`}
                     onClick={() => onDelete(entry.id)}
-                    className="text-text-muted hover:text-error transition-colors"
+                    className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-error transition-colors touch-manipulation"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

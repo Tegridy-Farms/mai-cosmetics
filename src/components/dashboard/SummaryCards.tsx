@@ -21,12 +21,12 @@ interface CardProps {
 
 function SummaryCard({ label, value, colorClass, suffix, ariaLabel, testId }: CardProps) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-6 min-w-[180px] shadow-sm">
+    <div className="bg-surface border border-border rounded-xl p-4 sm:p-6 min-w-0 shadow-sm">
       <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted">
         {label}
       </p>
       <p
-        className={`text-[32px] font-bold ${colorClass}`}
+        className={`text-2xl sm:text-[32px] font-bold ${colorClass}`}
         data-testid={testId}
         aria-label={ariaLabel}
       >

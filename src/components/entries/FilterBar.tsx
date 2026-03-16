@@ -39,9 +39,9 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
   }));
 
   return (
-    <div className="flex flex-wrap gap-3 items-end">
+    <div className="flex flex-wrap gap-3 sm:gap-3 gap-y-4 items-end">
       {variant === 'income' && (
-        <div>
+        <div className="w-full sm:w-auto min-w-0">
           <Label htmlFor="service_type_id">{t.entries.serviceType}</Label>
           <Select
             id="service_type_id"
@@ -55,7 +55,7 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
         </div>
       )}
       {variant === 'expense' && (
-        <div>
+        <div className="w-full sm:w-auto min-w-0">
           <Label htmlFor="category">{t.entries.category}</Label>
           <Select
             id="category"
@@ -66,28 +66,28 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
           />
         </div>
       )}
-      <div>
+      <div className="min-w-[120px] sm:min-w-0">
         <Label htmlFor="date_from">{t.entries.from}</Label>
         <input
           id="date_from"
           type="date"
           value={filters.date_from ?? ''}
           onChange={(e) => onChange({ ...filters, date_from: e.target.value || undefined })}
-          className="h-[36px] border border-border rounded-lg px-3 text-sm"
+          className="min-h-[44px] h-[44px] sm:h-[36px] sm:min-h-0 border border-border rounded-lg px-3 text-sm w-full sm:w-auto"
         />
       </div>
-      <div>
+      <div className="min-w-[120px] sm:min-w-0">
         <Label htmlFor="date_to">{t.entries.to}</Label>
         <input
           id="date_to"
           type="date"
           value={filters.date_to ?? ''}
           onChange={(e) => onChange({ ...filters, date_to: e.target.value || undefined })}
-          className="h-[36px] border border-border rounded-lg px-3 text-sm"
+          className="min-h-[44px] h-[44px] sm:h-[36px] sm:min-h-0 border border-border rounded-lg px-3 text-sm w-full sm:w-auto"
         />
       </div>
       {isActive && (
-        <Button variant="ghost" onClick={handleClear} className="h-[36px]">
+        <Button variant="ghost" onClick={handleClear} className="min-h-[44px] h-[44px] sm:h-[36px] sm:min-h-0">
           {t.entries.clearFilters}
         </Button>
       )}

@@ -55,10 +55,10 @@ export function NavigationBar() {
         </ul>
       </nav>
 
-      {/* Mobile: bottom tab bar - remove Export (links to non-existent page) */}
+      {/* Mobile: bottom tab bar - explicit left/right for reliable full-width in RTL */}
       <nav
-        className="lg:hidden fixed bottom-0 inset-inline-0 h-[56px] bg-white border-t border-border flex items-center z-50"
-        aria-hidden="true"
+        className="lg:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center min-h-[56px] pb-[env(safe-area-inset-bottom)] bg-white border-t border-border z-50"
+        aria-label="ניווט ראשי"
       >
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -67,7 +67,7 @@ export function NavigationBar() {
               key={item.href}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
-              className={`flex-1 flex flex-col items-center justify-center text-[11px] font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[44px] text-[11px] font-medium transition-colors touch-manipulation ${
                 isActive ? "text-primary" : "text-text-muted"
               }`}
             >

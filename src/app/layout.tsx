@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: t.nav.maiCosmetics,
   description: 'מערכת ניהול עסקי - מאי קוסמטיקס',
   manifest: '/site.webmanifest',
+  viewport: { width: 'device-width', initialScale: 1, maximumScale: 5 },
 };
 
 export default function RootLayout({
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body className="bg-background text-text-primary">
         <div className="flex min-h-screen">
           <NavigationBar />
-          <main className="flex-1 overflow-auto">{children}</main>
+          <main className="flex-1 overflow-auto pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+            {children}
+          </main>
         </div>
       </body>
     </html>

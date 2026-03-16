@@ -28,7 +28,7 @@ export function DeleteConfirmDialog({
           role="alertdialog"
           aria-labelledby="delete-dialog-title"
           aria-describedby="delete-dialog-description"
-          className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 bg-white w-[400px] p-6 rounded-[12px] shadow-lg"
+          className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface w-[min(calc(100vw-2rem),400px)] p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto"
         >
           <Dialog.Title id="delete-dialog-title" className="text-[18px] font-semibold text-text-primary">
             {t.entries.deleteTitle}

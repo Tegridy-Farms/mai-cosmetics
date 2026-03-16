@@ -22,9 +22,9 @@ export default async function IncomeNewPage() {
   const serviceTypes = await getServiceTypes();
 
   return (
-    <main className="pt-12 max-w-[560px] mx-auto px-4">
+    <main className="pt-6 sm:pt-12 pb-8 max-w-[560px] mx-auto px-4 sm:px-6">
       <p className="text-[12px] text-text-muted mb-4">{t.pages.breadcrumbLogIncome}</p>
-      <h1 className="text-[30px] font-bold mb-6">{t.pages.logIncome}</h1>
+      <h1 className="text-2xl sm:text-[30px] font-bold mb-6">{t.pages.logIncome}</h1>
       <IncomeForm serviceTypes={serviceTypes} />
     </main>
   );

@@ -53,8 +53,8 @@ export default async function DashboardPage() {
     monthData.gross_income === 0 && monthData.total_expenses === 0;
 
   return (
-    <div className="p-6 max-w-[1200px]">
-      <h1 className="text-[30px] font-bold text-text-primary mb-6">{t.nav.dashboard}</h1>
+    <div className="p-4 sm:p-6 max-w-[1200px] mx-auto w-full">
+      <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary mb-4 sm:mb-6">{t.nav.dashboard}</h1>
 
       {isEmpty ? (
         <EmptyState
@@ -67,12 +67,12 @@ export default async function DashboardPage() {
         <>
           <SummaryCards initialMonthData={monthData} initialAllData={allData} />
 
-          <h2 className="text-[20px] font-semibold text-text-primary mt-8 mb-4">
+          <h2 className="text-lg sm:text-[20px] font-semibold text-text-primary mt-6 sm:mt-8 mb-3 sm:mb-4">
             {t.dashboard.incomeByServiceType}
           </h2>
           <ServiceTypeTable data={monthData.by_service_type} />
 
-          <h2 className="text-[20px] font-semibold text-text-primary mt-8 mb-4">
+          <h2 className="text-lg sm:text-[20px] font-semibold text-text-primary mt-6 sm:mt-8 mb-3 sm:mb-4">
             {t.dashboard.monthlyTrend}
           </h2>
           <TrendChart data={trendData} />
