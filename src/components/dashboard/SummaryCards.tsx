@@ -21,8 +21,8 @@ interface CardProps {
 
 function SummaryCard({ label, value, colorClass, suffix, ariaLabel, testId }: CardProps) {
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 min-w-[180px]">
-      <p className="text-[12px] font-medium uppercase tracking-wide text-[#6B7280]">
+    <div className="bg-surface border border-border rounded-xl p-6 min-w-[180px] shadow-sm">
+      <p className="text-[12px] font-medium uppercase tracking-wide text-text-muted">
         {label}
       </p>
       <p
@@ -43,10 +43,10 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
 
   const netIncomeColor =
     data.net_income > 0
-      ? "text-[#057A55]"
+      ? "text-success"
       : data.net_income < 0
-      ? "text-[#C81E1E]"
-      : "text-[#111827]";
+      ? "text-error"
+      : "text-text-primary";
 
   return (
     <div>
@@ -56,8 +56,8 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
           onClick={() => setPeriod("month")}
           className={`px-3 py-1 rounded-full text-[14px] font-medium transition-colors ${
             period === "month"
-              ? "bg-[#EBF5FB] text-[#1A56DB]"
-              : "text-[#6B7280] hover:bg-[#F9FAFB]"
+              ? "bg-primary-tint text-primary"
+              : "text-text-muted hover:bg-background"
           }`}
         >
           {t.dashboard.thisMonth}
@@ -66,8 +66,8 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
           onClick={() => setPeriod("all")}
           className={`px-3 py-1 rounded-full text-[14px] font-medium transition-colors ${
             period === "all"
-              ? "bg-[#EBF5FB] text-[#1A56DB]"
-              : "text-[#6B7280] hover:bg-[#F9FAFB]"
+              ? "bg-primary-tint text-primary"
+              : "text-text-muted hover:bg-background"
           }`}
         >
           {t.dashboard.allTime}
@@ -79,12 +79,12 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
         <SummaryCard
           label={t.dashboard.grossIncome}
           value={data.gross_income}
-          colorClass="text-[#111827]"
+          colorClass="text-text-primary"
         />
         <SummaryCard
           label={t.dashboard.totalExpenses}
           value={data.total_expenses}
-          colorClass="text-[#111827]"
+          colorClass="text-text-primary"
         />
         <SummaryCard
           label={t.dashboard.netIncome}
@@ -95,7 +95,7 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
         <SummaryCard
           label={t.dashboard.netIncomePerHour}
           value={data.net_per_hour}
-          colorClass="text-[#111827]"
+          colorClass="text-text-primary"
           suffix={t.dashboard.perHour}
           ariaLabel={`${t.dashboard.netIncomePerHour}: ${formatAmount(data.net_per_hour)}`}
           testId="net-per-hour-value"

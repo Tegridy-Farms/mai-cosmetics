@@ -97,7 +97,7 @@ export function ExpenseForm() {
       <form
         onSubmit={handleSubmit}
         aria-busy={isSubmitting}
-        className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 max-w-[560px] mx-auto"
+        className="bg-surface border border-border rounded-xl p-6 max-w-[560px] mx-auto shadow-sm"
       >
         <div className="flex flex-col gap-4">
           {/* Description */}
@@ -114,7 +114,7 @@ export function ExpenseForm() {
               disabled={isSubmitting}
             />
             {errors.description && (
-              <p id="description-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="description-error" className="text-[12px] text-error mt-1">
                 {errors.description}
               </p>
             )}
@@ -135,7 +135,7 @@ export function ExpenseForm() {
               disabled={isSubmitting}
             />
             {errors.category && (
-              <p id="category-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="category-error" className="text-[12px] text-error mt-1">
                 {errors.category}
               </p>
             )}
@@ -155,7 +155,7 @@ export function ExpenseForm() {
               disabled={isSubmitting}
             />
             {errors.date && (
-              <p id="date-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="date-error" className="text-[12px] text-error mt-1">
                 {errors.date}
               </p>
             )}
@@ -165,7 +165,7 @@ export function ExpenseForm() {
           <div>
             <Label htmlFor="amount">{t.forms.amountIls}</Label>
             <div className="relative">
-              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none select-none">
                 ₪
               </span>
               <Input
@@ -183,7 +183,7 @@ export function ExpenseForm() {
               />
             </div>
             {errors.amount && (
-              <p id="amount-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="amount-error" className="text-[12px] text-error mt-1">
                 {errors.amount}
               </p>
             )}
@@ -195,7 +195,7 @@ export function ExpenseForm() {
 
           <Link
             href="/"
-            className="block text-center text-[#1A56DB] underline hover:text-[#1E429F] text-sm"
+            className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
           >
             {t.forms.backToDashboard}
           </Link>

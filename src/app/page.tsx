@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 max-w-[1200px]">
-      <h1 className="text-[30px] font-bold text-[#111827] mb-6">{t.nav.dashboard}</h1>
+      <h1 className="text-[30px] font-bold text-text-primary mb-6">{t.nav.dashboard}</h1>
 
       {isEmpty ? (
         <EmptyState
@@ -67,12 +67,12 @@ export default async function DashboardPage() {
         <>
           <SummaryCards initialMonthData={monthData} initialAllData={allData} />
 
-          <h2 className="text-[20px] font-semibold text-[#111827] mt-8 mb-4">
+          <h2 className="text-[20px] font-semibold text-text-primary mt-8 mb-4">
             {t.dashboard.incomeByServiceType}
           </h2>
           <ServiceTypeTable data={monthData.by_service_type} />
 
-          <h2 className="text-[20px] font-semibold text-[#111827] mt-8 mb-4">
+          <h2 className="text-[20px] font-semibold text-text-primary mt-8 mb-4">
             {t.dashboard.monthlyTrend}
           </h2>
           <TrendChart data={trendData} />

@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#F9FAFB] text-[#111827]">
+      <body className="bg-background text-text-primary">
         <div className="flex min-h-screen">
           <NavigationBar />
           <main className="flex-1 overflow-auto">{children}</main>

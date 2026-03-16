@@ -23,7 +23,7 @@ export function Pagination({ total, page, pageSize = 20, onChange }: PaginationP
 
   return (
     <div className="flex items-center justify-between py-3 px-4">
-      <span className="text-[12px] font-normal text-[#6B7280]">
+      <span className="text-[12px] font-normal text-text-muted">
         {t.entries.showingEntries(start, end, total)}
       </span>
       <div className="flex gap-2">

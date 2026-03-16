@@ -8,10 +8,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-[#1A56DB] hover:bg-[#1E429F] text-white h-[44px] px-4 rounded-[6px] font-medium',
-  ghost: 'bg-transparent border border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB] h-[44px] px-4 rounded-[6px]',
-  destructive: 'bg-[#C81E1E] text-white hover:bg-[#9B1C1C] h-[44px] px-4 rounded-[6px] font-medium',
-  link: 'bg-transparent text-[#1A56DB] underline hover:text-[#1E429F] p-0',
+  primary: 'bg-primary hover:bg-primary-dark text-white h-[44px] px-4 rounded-lg font-medium',
+  ghost: 'bg-transparent border border-border text-text-primary hover:bg-background h-[44px] px-4 rounded-lg',
+  destructive: 'bg-error text-white hover:bg-error/90 h-[44px] px-4 rounded-lg font-medium',
+  link: 'bg-transparent text-primary underline hover:text-primary-dark p-0',
 };
 
 export function Button({

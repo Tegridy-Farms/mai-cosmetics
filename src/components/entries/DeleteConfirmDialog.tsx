@@ -30,10 +30,10 @@ export function DeleteConfirmDialog({
           aria-describedby="delete-dialog-description"
           className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 bg-white w-[400px] p-6 rounded-[12px] shadow-lg"
         >
-          <Dialog.Title id="delete-dialog-title" className="text-[18px] font-semibold text-[#111827]">
+          <Dialog.Title id="delete-dialog-title" className="text-[18px] font-semibold text-text-primary">
             {t.entries.deleteTitle}
           </Dialog.Title>
-          <Dialog.Description id="delete-dialog-description" className="text-[14px] text-[#6B7280] mt-2">
+          <Dialog.Description id="delete-dialog-description" className="text-[14px] text-text-muted mt-2">
             {t.entries.deleteDesc}
           </Dialog.Description>
           <div className="flex justify-end gap-3 mt-6">

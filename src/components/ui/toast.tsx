@@ -39,7 +39,7 @@ export function ToastContainer({ toasts }: ToastContainerProps) {
         <div
           key={toast.id}
           className={`px-4 py-3 rounded-[6px] text-white text-sm font-medium shadow-lg ${
-            toast.variant === 'success' ? 'bg-[#057A55]' : 'bg-[#C81E1E]'
+            toast.variant === 'success' ? 'bg-success' : 'bg-error'
           }`}
           role="alert"
         >

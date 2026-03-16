@@ -114,7 +114,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
       <form
         onSubmit={handleSubmit}
         aria-busy={isSubmitting}
-        className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 max-w-[560px] mx-auto"
+        className="bg-surface border border-border rounded-xl p-6 max-w-[560px] mx-auto shadow-sm"
       >
         <div className="flex flex-col gap-4">
           {/* Service Name */}
@@ -131,7 +131,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               disabled={isSubmitting}
             />
             {errors.service_name && (
-              <p id="service_name-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="service_name-error" className="text-[12px] text-error mt-1">
                 {errors.service_name}
               </p>
             )}
@@ -152,7 +152,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               disabled={isSubmitting}
             />
             {errors.service_type_id && (
-              <p id="service_type_id-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="service_type_id-error" className="text-[12px] text-error mt-1">
                 {errors.service_type_id}
               </p>
             )}
@@ -172,7 +172,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               disabled={isSubmitting}
             />
             {errors.date && (
-              <p id="date-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="date-error" className="text-[12px] text-error mt-1">
                 {errors.date}
               </p>
             )}
@@ -193,7 +193,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               disabled={isSubmitting}
             />
             {errors.duration_minutes && (
-              <p id="duration_minutes-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="duration_minutes-error" className="text-[12px] text-error mt-1">
                 {errors.duration_minutes}
               </p>
             )}
@@ -203,7 +203,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
           <div>
             <Label htmlFor="amount">{t.forms.amountIls}</Label>
             <div className="relative">
-              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none select-none">
                 ₪
               </span>
               <Input
@@ -221,7 +221,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               />
             </div>
             {errors.amount && (
-              <p id="amount-error" className="text-[12px] text-[#C81E1E] mt-1">
+              <p id="amount-error" className="text-[12px] text-error mt-1">
                 {errors.amount}
               </p>
             )}
@@ -233,7 +233,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
 
           <Link
             href="/"
-            className="block text-center text-[#1A56DB] underline hover:text-[#1E429F] text-sm"
+            className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
           >
             {t.forms.backToDashboard}
           </Link>

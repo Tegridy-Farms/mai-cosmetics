@@ -23,7 +23,7 @@ export default async function IncomeNewPage() {
 
   return (
     <main className="pt-12 max-w-[560px] mx-auto px-4">
-      <p className="text-[12px] text-[#6B7280] mb-4">{t.pages.breadcrumbLogIncome}</p>
+      <p className="text-[12px] text-text-muted mb-4">{t.pages.breadcrumbLogIncome}</p>
       <h1 className="text-[30px] font-bold mb-6">{t.pages.logIncome}</h1>
       <IncomeForm serviceTypes={serviceTypes} />
     </main>

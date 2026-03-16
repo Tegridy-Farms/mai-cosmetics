@@ -106,7 +106,7 @@ export default function IncomePage() {
   return (
     <div className="max-w-[1200px] px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-[30px] font-bold text-[#111827]">{t.pages.incomeEntries}</h1>
+        <h1 className="text-[30px] font-bold text-text-primary">{t.pages.incomeEntries}</h1>
         <div className="flex gap-2">
           <Link href="/income/new">
             <Button variant="primary">+ {t.pages.addIncome}</Button>
@@ -117,8 +117,8 @@ export default function IncomePage() {
         </div>
       </div>
 
-      <div className="bg-white border border-[#E5E7EB] rounded-[8px]">
-        <div className="p-4 border-b border-[#E5E7EB]">
+      <div className="bg-surface border border-border rounded-xl shadow-sm">
+        <div className="p-4 border-b border-border">
           <FilterBar
             variant="income"
             filters={filters}

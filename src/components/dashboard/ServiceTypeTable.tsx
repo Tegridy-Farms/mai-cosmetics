@@ -58,7 +58,7 @@ export function ServiceTypeTable({ data }: ServiceTypeTableProps) {
                 scope="col"
                 aria-sort={sortKey === col.key ? sortDir : "none"}
                 onClick={() => handleSort(col.key)}
-                className="text-[12px] font-semibold uppercase text-[#6B7280] text-start px-4 py-3 cursor-pointer select-none whitespace-nowrap"
+                className="text-[12px] font-semibold uppercase text-text-muted text-start px-4 py-3 cursor-pointer select-none whitespace-nowrap"
               >
                 {col.label}
                 {sortKey === col.key ? (
@@ -74,24 +74,24 @@ export function ServiceTypeTable({ data }: ServiceTypeTableProps) {
           {sorted.map((row, idx) => {
             const netColor =
               row.net_income > 0
-                ? "text-[#057A55]"
+                ? "text-success"
                 : row.net_income < 0
-                ? "text-[#C81E1E]"
-                : "text-[#111827]";
-            const rowBg = idx % 2 === 1 ? "bg-[#F9FAFB]" : "";
+                ? "text-error"
+                : "text-text-primary";
+            const rowBg = idx % 2 === 1 ? "bg-background" : "";
             return (
               <tr key={row.name} className={`${rowBg} min-h-[44px]`}>
-                <td className="px-4 py-3 text-[14px] text-[#111827]">{row.name}</td>
-                <td className="px-4 py-3 text-[14px] text-[#111827]">
+                <td className="px-4 py-3 text-[14px] text-text-primary">{row.name}</td>
+                <td className="px-4 py-3 text-[14px] text-text-primary">
                   {row.total_sessions}
                 </td>
-                <td className="px-4 py-3 text-[14px] text-[#111827]">
+                <td className="px-4 py-3 text-[14px] text-text-primary">
                   {row.total_hours.toFixed(1)}
                 </td>
-                <td className="px-4 py-3 text-[14px] text-[#111827]">
+                <td className="px-4 py-3 text-[14px] text-text-primary">
                   {formatAmount(row.gross_income)}
                 </td>
-                <td className="px-4 py-3 text-[14px] text-[#111827]">
+                <td className="px-4 py-3 text-[14px] text-text-primary">
                   {formatAmount(row.expense_share)}
                 </td>
                 <td

@@ -73,7 +73,7 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
           type="date"
           value={filters.date_from ?? ''}
           onChange={(e) => onChange({ ...filters, date_from: e.target.value || undefined })}
-          className="h-[36px] border border-[#E5E7EB] rounded-[6px] px-3 text-sm"
+          className="h-[36px] border border-border rounded-lg px-3 text-sm"
         />
       </div>
       <div>
@@ -83,7 +83,7 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
           type="date"
           value={filters.date_to ?? ''}
           onChange={(e) => onChange({ ...filters, date_to: e.target.value || undefined })}
-          className="h-[36px] border border-[#E5E7EB] rounded-[6px] px-3 text-sm"
+          className="h-[36px] border border-border rounded-lg px-3 text-sm"
         />
       </div>
       {isActive && (

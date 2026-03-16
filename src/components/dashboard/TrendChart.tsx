@@ -18,7 +18,7 @@ const RechartsChart = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="w-full h-[280px] bg-[#E5E7EB] rounded-[8px] animate-pulse"
+        className="w-full h-[280px] bg-skeleton rounded-xl animate-pulse"
         aria-label="Loading trend chart"
         data-testid="trend-chart-skeleton"
       />
@@ -34,19 +34,19 @@ export function TrendChart({ data, isLoading = false }: TrendChartProps) {
       : 'no data';
 
   return (
-    <figure className="bg-white border border-[#E5E7EB] rounded-[8px] p-6">
+    <figure className="bg-surface border border-border rounded-xl p-6 shadow-sm">
       <figcaption className="sr-only">
         {`Monthly gross income, expenses, and net income for ${rangeLabel}`}
       </figcaption>
       {isLoading ? (
         <div
-          className="w-full h-[280px] bg-[#E5E7EB] rounded-[8px] animate-pulse"
+          className="w-full h-[280px] bg-skeleton rounded-xl animate-pulse"
           aria-label="Loading trend chart"
           data-testid="trend-chart-skeleton"
         />
       ) : data.length === 0 ? (
         <div
-          className="w-full h-[280px] flex items-center justify-center text-[14px] text-[#6B7280]"
+          className="w-full h-[280px] flex items-center justify-center text-[14px] text-text-muted"
           data-testid="trend-chart-empty"
         >
           {t.dashboard.noMonthlyData}

@@ -19,9 +19,9 @@ interface TrendChartInnerProps {
   data: MonthlyTrend[];
 }
 
-const CHART_BLUE = '#3F83F8';
-const CHART_SLATE = '#9CA3AF';
-const CHART_GREEN = '#31C48D';
+const CHART_GROSS = '#C74B7C';
+const CHART_EXPENSES = '#9D8B9E';
+const CHART_NET = '#10B981';
 
 export function TrendChartInner({ data }: TrendChartInnerProps) {
   const chartData = data.map((d) => ({
@@ -43,7 +43,7 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
         barGap={4}
         margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#F5E6EC" />
         <XAxis
           dataKey="month"
           tick={{ fontSize: 12, fill: '#6B7280' }}
@@ -63,7 +63,7 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
           ]}
           contentStyle={{
             background: '#fff',
-            border: '1px solid #E5E7EB',
+            border: '1px solid #F5E6EC',
             borderRadius: 6,
             fontSize: 13,
           }}
@@ -72,9 +72,9 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
           wrapperStyle={{ fontSize: 13, color: '#6B7280' }}
           formatter={(value: string) => nameMap[value] ?? value}
         />
-        <Bar dataKey="gross" name={t.chart.grossIncome} fill={CHART_BLUE} radius={[3, 3, 0, 0]} />
-        <Bar dataKey="expenses" name={t.chart.expenses} fill={CHART_SLATE} radius={[3, 3, 0, 0]} />
-        <Bar dataKey="net" name={t.chart.netIncome} fill={CHART_GREEN} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="gross" name={t.chart.grossIncome} fill={CHART_GROSS} radius={[6, 6, 0, 0]} />
+        <Bar dataKey="expenses" name={t.chart.expenses} fill={CHART_EXPENSES} radius={[6, 6, 0, 0]} />
+        <Bar dataKey="net" name={t.chart.netIncome} fill={CHART_NET} radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
     </div>

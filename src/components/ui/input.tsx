@@ -9,11 +9,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         ref={ref}
-        className={`w-full h-[44px] px-3 border rounded-[6px] outline-none transition-colors ${
+        className={`w-full h-[44px] px-3 border rounded-lg outline-none transition-colors ${
           error
-            ? 'border-[#C81E1E] focus:ring-2 focus:ring-[#C81E1E] focus:border-[#C81E1E]'
-            : 'border-[#E5E7EB] focus:ring-2 focus:ring-[#3F83F8] focus:border-[#3F83F8]'
-        } disabled:bg-[#F9FAFB] disabled:cursor-not-allowed ${className}`}
+            ? 'border-error focus:ring-2 focus:ring-error focus:border-error'
+            : 'border-border focus:ring-2 focus:ring-focusRing focus:border-focusRing'
+        } disabled:bg-background disabled:cursor-not-allowed ${className}`}
         {...props}
       />
     );

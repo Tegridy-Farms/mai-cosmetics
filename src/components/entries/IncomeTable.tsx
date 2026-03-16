@@ -18,23 +18,23 @@ export function IncomeTable({ entries, isLoading, onDelete }: IncomeTableProps) 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-start">
-        <thead className="border-b border-[#E5E7EB]">
+        <thead className="border-b border-border">
           <tr>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.date}</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.serviceName}</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.serviceType}</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.durationMin}</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280] text-end">{t.entries.amount}</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.actions}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.date}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceName}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceType}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.durationMin}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.actions}</th>
           </tr>
         </thead>
         <tbody>
           {isLoading ? (
             Array.from({ length: SKELETON_ROWS }).map((_, i) => (
-              <tr key={i} data-testid="skeleton-row" className="border-b border-[#E5E7EB]">
+              <tr key={i} data-testid="skeleton-row" className="border-b border-border">
                 {Array.from({ length: 6 }).map((_, j) => (
                   <td key={j} className="py-3 px-4">
-                    <div className="h-4 bg-[#E5E7EB] rounded animate-pulse" />
+                    <div className="h-4 bg-skeleton rounded animate-pulse" />
                   </td>
                 ))}
               </tr>
@@ -52,19 +52,19 @@ export function IncomeTable({ entries, isLoading, onDelete }: IncomeTableProps) 
             </tr>
           ) : (
             entries.map((entry) => (
-              <tr key={entry.id} className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB]">
-                <td className="py-3 px-4 text-[#111827]">{formatDate(entry.date)}</td>
-                <td className="py-3 px-4 text-[#111827]">{entry.service_name}</td>
-                <td className="py-3 px-4 text-[#111827]">{entry.service_type_id}</td>
-                <td className="py-3 px-4 text-[#111827]">{entry.duration_minutes}</td>
-                <td className="py-3 px-4 text-[#111827] text-end font-mono">
+              <tr key={entry.id} className="border-b border-border hover:bg-background">
+                <td className="py-3 px-4 text-text-primary">{formatDate(entry.date)}</td>
+                <td className="py-3 px-4 text-text-primary">{entry.service_name}</td>
+                <td className="py-3 px-4 text-text-primary">{entry.service_type_id}</td>
+                <td className="py-3 px-4 text-text-primary">{entry.duration_minutes}</td>
+                <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {formatAmount(entry.amount)}
                 </td>
                 <td className="py-3 px-4">
                   <button
-                    aria-label={`מחק הכנסה: ${entry.service_name}, ${formatDate(entry.date)}`}
+                    aria-label={`מחקי הכנסה: ${entry.service_name}, ${formatDate(entry.date)}`}
                     onClick={() => onDelete(entry.id)}
-                    className="text-[#6B7280] hover:text-[#C81E1E] transition-colors"
+                    className="text-text-muted hover:text-error transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

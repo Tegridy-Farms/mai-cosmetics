@@ -1,3 +1,18 @@
+:root {
+  --color-primary: #C74B7C;
+  --color-primary-dark: #B83A6B;
+  --color-primary-tint: #FDF2F8;
+  --color-accent-pink: #E8799E;
+  --color-background: #FFF8FA;
+  --color-border: #F5E6EC;
+  --color-focus-ring: #E8799E;
+  --color-success: #059669;
+  --color-error: #BE123C;
+  --color-chart-gross: #C74B7C;
+  --color-chart-expenses: #9D8B9E;
+  --color-chart-net: #10B981;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
