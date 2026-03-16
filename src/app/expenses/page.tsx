@@ -8,6 +8,8 @@ import { FilterBar } from '@/components/entries/FilterBar';
 import { ExpenseTable } from '@/components/entries/ExpenseTable';
 import { Pagination } from '@/components/entries/Pagination';
 import { DeleteConfirmDialog } from '@/components/entries/DeleteConfirmDialog';
+import { t } from '@/lib/translations';
+import { formatDate } from '@/lib/format';
 import type { ExpenseEntry, FilterState } from '@/types';
 
 export default function ExpensesPage() {
@@ -36,7 +38,7 @@ export default function ExpensesPage() {
       setEntries(json.data);
       setTotal(json.total);
     } catch {
-      showToast('Could not load entries. Please try again.', 'error');
+      showToast(t.toast.couldNotLoad, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -63,11 +65,7 @@ export default function ExpensesPage() {
   const handleDeleteClick = (id: number) => {
     const entry = entries.find((e) => e.id === id);
     if (entry) {
-      const dateFormatted = new Date(entry.date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
-      setDeleteDescription(`${entry.description}, ${dateFormatted}`);
+      setDeleteDescription(`${entry.description}, ${formatDate(entry.date)}`);
     }
     setDeleteId(id);
   };
@@ -87,7 +85,7 @@ export default function ExpensesPage() {
     } catch {
       setDeleteId(null);
       setIsDeleting(false);
-      showToast('Could not delete. Please try again.', 'error');
+      showToast(t.toast.couldNotDelete, 'error');
     }
   };
 
@@ -99,13 +97,13 @@ export default function ExpensesPage() {
   return (
     <div className="max-w-[1200px] px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-[30px] font-bold text-[#111827]">Expense Entries</h1>
+        <h1 className="text-[30px] font-bold text-[#111827]">{t.pages.expenseEntries}</h1>
         <div className="flex gap-2">
           <Link href="/expenses/new">
-            <Button variant="primary">+ Add Expense</Button>
+            <Button variant="primary">+ {t.pages.addExpense}</Button>
           </Link>
           <a href="/api/expenses/export">
-            <Button variant="ghost">Export CSV</Button>
+            <Button variant="ghost">{t.pages.exportCsv}</Button>
           </a>
         </div>
       </div>

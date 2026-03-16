@@ -54,7 +54,7 @@ describe('TrendChart', () => {
       const { container } = render(<TrendChart data={mockTrendData} />);
       const figcaption = container.querySelector('figcaption');
       // Should mention some month from start to end
-      expect(figcaption?.textContent).toMatch(/jan|feb|mar/i);
+      expect(figcaption?.textContent).toMatch(/ינו׳|מרץ|2026/);
     });
   });
 
@@ -83,7 +83,7 @@ describe('TrendChart', () => {
 
     it('shows "No monthly data available yet." when empty', () => {
       render(<TrendChart data={[]} />);
-      expect(screen.getByText(/no monthly data available yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/אין עדיין נתונים חודשיים/)).toBeInTheDocument();
     });
 
     it('does not show recharts chart when data is empty', () => {

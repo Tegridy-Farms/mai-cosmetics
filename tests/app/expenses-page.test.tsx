@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ExpensesPage from '@/app/expenses/page';
 
@@ -144,14 +144,14 @@ describe('ExpensesPage', () => {
     await act(async () => {
       render(<ExpensesPage />);
     });
-    expect(screen.getByRole('heading', { name: /expense entries/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /רשומות הוצאות/ })).toBeInTheDocument();
   });
 
   it('renders "+ Add Expense" button linking to /expenses/new', async () => {
     await act(async () => {
       render(<ExpensesPage />);
     });
-    const link = screen.getByText('+ Add Expense').closest('a');
+    const link = screen.getByText(/הוספת הוצאה/).closest('a');
     expect(link).toHaveAttribute('href', '/expenses/new');
   });
 
@@ -159,14 +159,14 @@ describe('ExpensesPage', () => {
     await act(async () => {
       render(<ExpensesPage />);
     });
-    expect(screen.getByText('Export CSV')).toBeInTheDocument();
+    expect(screen.getByText(/ייצוא CSV/)).toBeInTheDocument();
   });
 
   it('"Export CSV" button links to /api/expenses/export', async () => {
     await act(async () => {
       render(<ExpensesPage />);
     });
-    const exportLink = screen.getByText('Export CSV').closest('a');
+    const exportLink = screen.getByText(/ייצוא CSV/).closest('a');
     expect(exportLink).toHaveAttribute('href', '/api/expenses/export');
   });
 
@@ -186,8 +186,8 @@ describe('ExpensesPage', () => {
     });
     // Category label exists in the filter bar
     expect(screen.getByTestId('category')).toBeInTheDocument();
-    expect(screen.getByLabelText(/^from$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^to$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^מ$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^עד$/)).toBeInTheDocument();
   });
 
   it('shows category options in filter bar', async () => {
@@ -212,8 +212,8 @@ describe('ExpensesPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Nail polish supply')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*nail polish supply/i));
-    expect(screen.getByText('Delete this entry?')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*Nail polish supply/i));
+    expect(screen.getByText(/למחוק את הרשומה/)).toBeInTheDocument();
   });
 
   it('closes delete dialog on Cancel', async () => {
@@ -223,11 +223,11 @@ describe('ExpensesPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Nail polish supply')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*nail polish supply/i));
-    expect(screen.getByText('Delete this entry?')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*Nail polish supply/i));
+    expect(screen.getByText(/למחוק את הרשומה/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /ביטול/ }));
     await waitFor(() => {
-      expect(screen.queryByText('Delete this entry?')).not.toBeInTheDocument();
+      expect(screen.queryByText(/למחוק את הרשומה/)).not.toBeInTheDocument();
     });
   });
 
@@ -273,9 +273,9 @@ describe('ExpensesPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Nail polish supply')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*nail polish supply/i));
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*Nail polish supply/i));
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+      fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: /מחק/ }));
     });
     await waitFor(() => {
       expect(screen.queryByText('Nail polish supply')).not.toBeInTheDocument();
@@ -310,12 +310,12 @@ describe('ExpensesPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Nail polish supply')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*nail polish supply/i));
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*Nail polish supply/i));
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+      fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: /מחק/ }));
     });
     await waitFor(() => {
-      expect(screen.getByText(/could not delete/i)).toBeInTheDocument();
+      expect(screen.getByText(/לא ניתן למחוק/)).toBeInTheDocument();
     });
   });
 
@@ -357,7 +357,7 @@ describe('ExpensesPage', () => {
       render(<ExpensesPage />);
     });
     await waitFor(() => {
-      expect(screen.getByText(/no entries match your filters/i)).toBeInTheDocument();
+      expect(screen.getByText(/אין רשומות התואמות את הסינון/)).toBeInTheDocument();
     });
   });
 });

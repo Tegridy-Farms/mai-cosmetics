@@ -12,26 +12,11 @@ import {
   CartesianGrid,
 } from 'recharts';
 import type { MonthlyTrend } from '@/types';
+import { formatMonth, formatAmountShort, formatAmountTooltip } from '@/lib/format';
+import { t } from '@/lib/translations';
 
 interface TrendChartInnerProps {
   data: MonthlyTrend[];
-}
-
-function formatMonth(month: string): string {
-  const [year, mon] = month.split('-');
-  const date = new Date(Number(year), Number(mon) - 1, 1);
-  return date.toLocaleDateString('en-US', { month: 'short' });
-}
-
-function formatYAxis(value: number): string {
-  if (Math.abs(value) >= 1000) {
-    return `$${(value / 1000).toFixed(1)}k`;
-  }
-  return `$${value}`;
-}
-
-function formatTooltipValue(value: number): string {
-  return `$${value.toFixed(2)}`;
 }
 
 const CHART_BLUE = '#3F83F8';
@@ -44,7 +29,14 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
     month: formatMonth(d.month),
   }));
 
+  const nameMap: Record<string, string> = {
+    gross: t.chart.grossIncome,
+    expenses: t.chart.expenses,
+    net: t.chart.netIncome,
+  };
+
   return (
+    <div dir="ltr">
     <ResponsiveContainer width="100%" height={280}>
       <BarChart
         data={chartData}
@@ -59,15 +51,15 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
           tickLine={false}
         />
         <YAxis
-          tickFormatter={formatYAxis}
+          tickFormatter={formatAmountShort}
           tick={{ fontSize: 12, fill: '#6B7280' }}
           axisLine={false}
           tickLine={false}
         />
         <Tooltip
           formatter={(value: number, name: string) => [
-            formatTooltipValue(value),
-            name.charAt(0).toUpperCase() + name.slice(1),
+            formatAmountTooltip(value),
+            nameMap[name] ?? name,
           ]}
           contentStyle={{
             background: '#fff',
@@ -78,12 +70,13 @@ export function TrendChartInner({ data }: TrendChartInnerProps) {
         />
         <Legend
           wrapperStyle={{ fontSize: 13, color: '#6B7280' }}
-          formatter={(value: string) => value.charAt(0).toUpperCase() + value.slice(1)}
+          formatter={(value: string) => nameMap[value] ?? value}
         />
-        <Bar dataKey="gross" name="Gross Income" fill={CHART_BLUE} radius={[3, 3, 0, 0]} />
-        <Bar dataKey="expenses" name="Expenses" fill={CHART_SLATE} radius={[3, 3, 0, 0]} />
-        <Bar dataKey="net" name="Net Income" fill={CHART_GREEN} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="gross" name={t.chart.grossIncome} fill={CHART_BLUE} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="expenses" name={t.chart.expenses} fill={CHART_SLATE} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="net" name={t.chart.netIncome} fill={CHART_GREEN} radius={[3, 3, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
+    </div>
   );
 }

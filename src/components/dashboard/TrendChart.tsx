@@ -3,6 +3,8 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import type { MonthlyTrend } from '@/types';
+import { formatMonthLabel } from '@/lib/format';
+import { t } from '@/lib/translations';
 
 interface TrendChartProps {
   data: MonthlyTrend[];
@@ -47,17 +49,11 @@ export function TrendChart({ data, isLoading = false }: TrendChartProps) {
           className="w-full h-[280px] flex items-center justify-center text-[14px] text-[#6B7280]"
           data-testid="trend-chart-empty"
         >
-          No monthly data available yet.
+          {t.dashboard.noMonthlyData}
         </div>
       ) : (
         <RechartsChart data={data} />
       )}
     </figure>
   );
-}
-
-function formatMonthLabel(month: string): string {
-  const [year, mon] = month.split('-');
-  const date = new Date(Number(year), Number(mon) - 1, 1);
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }

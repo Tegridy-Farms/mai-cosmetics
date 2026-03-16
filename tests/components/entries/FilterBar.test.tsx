@@ -52,9 +52,9 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    expect(screen.getByText(/service type/i)).toBeInTheDocument();
-    expect(screen.getByText(/^from$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^to$/i)).toBeInTheDocument();
+    expect(screen.getByText(/סוג שירות/)).toBeInTheDocument();
+    expect(screen.getByText(/^מ$/)).toBeInTheDocument();
+    expect(screen.getByText(/^עד$/)).toBeInTheDocument();
   });
 
   it('labels are associated with controls (accessible)', () => {
@@ -67,8 +67,8 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    expect(screen.getByLabelText(/^from$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^to$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^מ$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^עד$/)).toBeInTheDocument();
   });
 
   it('does not show Clear Filters when no filters active', () => {
@@ -81,7 +81,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    expect(screen.queryByText(/clear filters/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ניקוי סינון/)).not.toBeInTheDocument();
   });
 
   it('shows Clear Filters when service_type_id filter active', () => {
@@ -94,7 +94,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    expect(screen.getByText(/clear filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/ניקוי סינון/)).toBeInTheDocument();
   });
 
   it('shows Clear Filters when date_from filter active', () => {
@@ -107,7 +107,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    expect(screen.getByText(/clear filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/ניקוי סינון/)).toBeInTheDocument();
   });
 
   it('calls onChange with updated service_type_id when select changes', () => {
@@ -136,7 +136,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    fireEvent.change(screen.getByLabelText(/^from$/i), { target: { value: '2026-01-01' } });
+    fireEvent.change(screen.getByLabelText(/^מ$/), { target: { value: '2026-01-01' } });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ date_from: '2026-01-01' }));
   });
 
@@ -151,7 +151,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    fireEvent.change(screen.getByLabelText(/^to$/i), { target: { value: '2026-03-31' } });
+    fireEvent.change(screen.getByLabelText(/^עד$/), { target: { value: '2026-03-31' } });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ date_to: '2026-03-31' }));
   });
 
@@ -166,7 +166,7 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    fireEvent.click(screen.getByText(/clear filters/i));
+    fireEvent.click(screen.getByText(/ניקוי סינון/));
     expect(onClear).toHaveBeenCalled();
   });
 
@@ -180,10 +180,10 @@ describe('FilterBar - income variant', () => {
         serviceTypes={mockServiceTypes}
       />
     );
-    fireEvent.click(screen.getByText(/clear filters/i));
+    fireEvent.click(screen.getByText(/ניקוי סינון/));
     const liveRegion = container.querySelector('[aria-live]');
     expect(liveRegion).toBeInTheDocument();
-    expect(liveRegion?.textContent).toContain('Filters cleared');
+    expect(liveRegion?.textContent).toContain('הסינון נוקה');
   });
 
   it('renders service type options passed via serviceTypes prop', () => {
@@ -206,19 +206,19 @@ describe('FilterBar - expense variant', () => {
     render(
       <FilterBar variant="expense" filters={{}} onChange={jest.fn()} onClear={jest.fn()} />
     );
-    expect(screen.getByText(/^category$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^from$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^to$/i)).toBeInTheDocument();
+    expect(screen.getByText(/קטגוריה/)).toBeInTheDocument();
+    expect(screen.getByText(/^מ$/)).toBeInTheDocument();
+    expect(screen.getByText(/^עד$/)).toBeInTheDocument();
   });
 
-  it('shows category options: equipment, materials, consumables, other', () => {
+  it('shows category options in Hebrew', () => {
     render(
       <FilterBar variant="expense" filters={{}} onChange={jest.fn()} onClear={jest.fn()} />
     );
-    expect(screen.getByText('equipment')).toBeInTheDocument();
-    expect(screen.getByText('materials')).toBeInTheDocument();
-    expect(screen.getByText('consumables')).toBeInTheDocument();
-    expect(screen.getByText('other')).toBeInTheDocument();
+    expect(screen.getByText('ציוד')).toBeInTheDocument();
+    expect(screen.getByText('חומרים')).toBeInTheDocument();
+    expect(screen.getByText('מתכלים')).toBeInTheDocument();
+    expect(screen.getByText('אחר')).toBeInTheDocument();
   });
 
   it('shows Clear Filters when category filter active', () => {
@@ -230,7 +230,7 @@ describe('FilterBar - expense variant', () => {
         onClear={jest.fn()}
       />
     );
-    expect(screen.getByText(/clear filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/ניקוי סינון/)).toBeInTheDocument();
   });
 
   it('calls onChange with updated category when select changes', () => {

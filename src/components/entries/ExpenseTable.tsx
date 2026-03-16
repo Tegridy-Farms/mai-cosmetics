@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { EmptyState } from '@/components/ui/empty-state';
+import { formatDate, formatAmount } from '@/lib/format';
+import { t } from '@/lib/translations';
 import type { ExpenseEntry } from '@/types';
 
 interface ExpenseTableProps {
@@ -10,29 +12,26 @@ interface ExpenseTableProps {
   onDelete: (id: number) => void;
 }
 
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function formatAmount(amount: number): string {
-  return `$${amount.toFixed(2)}`;
-}
+const CATEGORY_LABELS: Record<string, string> = {
+  equipment: t.categories.equipment,
+  materials: t.categories.materials,
+  consumables: t.categories.consumables,
+  other: t.categories.other,
+};
 
 const SKELETON_ROWS = 5;
 
 export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left">
+      <table className="w-full text-sm text-start">
         <thead className="border-b border-[#E5E7EB]">
           <tr>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">Date</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">Description</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">Category</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280] text-right">Amount</th>
-            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">Actions</th>
+            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.date}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.description}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.category}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280] text-end">{t.entries.amount}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-[#6B7280]">{t.entries.actions}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,9 +49,9 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
             <tr>
               <td colSpan={5}>
                 <EmptyState
-                  title="No entries match your filters."
-                  description="Try adjusting your filters or add a new entry."
-                  ctaLabel="Add Expense"
+                  title={t.entries.noEntriesMatch}
+                  description={t.entries.tryAdjusting}
+                  ctaLabel={t.entries.addExpense}
                   ctaHref="/expenses/new"
                 />
               </td>
@@ -62,13 +61,13 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
               <tr key={entry.id} className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB]">
                 <td className="py-3 px-4 text-[#111827]">{formatDate(entry.date)}</td>
                 <td className="py-3 px-4 text-[#111827]">{entry.description}</td>
-                <td className="py-3 px-4 text-[#111827]">{entry.category}</td>
-                <td className="py-3 px-4 text-[#111827] text-right font-mono">
+                <td className="py-3 px-4 text-[#111827]">{CATEGORY_LABELS[entry.category] ?? entry.category}</td>
+                <td className="py-3 px-4 text-[#111827] text-end font-mono">
                   {formatAmount(entry.amount)}
                 </td>
                 <td className="py-3 px-4">
                   <button
-                    aria-label={`Delete expense entry: ${entry.description}, ${formatDate(entry.date)}`}
+                    aria-label={`מחק הוצאה: ${entry.description}, ${formatDate(entry.date)}`}
                     onClick={() => onDelete(entry.id)}
                     className="text-[#6B7280] hover:text-[#C81E1E] transition-colors"
                   >

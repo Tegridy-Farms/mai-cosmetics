@@ -37,14 +37,14 @@ const mockEntries: IncomeEntry[] = [
 ];
 
 describe('IncomeTable', () => {
-  it('renders column headers: Date, Service Name, Service Type, Duration, Amount, Actions', () => {
+  it('renders column headers in Hebrew', () => {
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText(/^date$/i)).toBeInTheDocument();
-    expect(screen.getByText(/service name/i)).toBeInTheDocument();
-    expect(screen.getByText(/service type/i)).toBeInTheDocument();
-    expect(screen.getByText(/duration/i)).toBeInTheDocument();
-    expect(screen.getByText(/amount/i)).toBeInTheDocument();
-    expect(screen.getByText(/actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/תאריך/)).toBeInTheDocument();
+    expect(screen.getByText(/שם השירות/)).toBeInTheDocument();
+    expect(screen.getByText(/סוג שירות/)).toBeInTheDocument();
+    expect(screen.getByText(/משך/)).toBeInTheDocument();
+    expect(screen.getByText(/סכום/)).toBeInTheDocument();
+    expect(screen.getByText(/פעולות/)).toBeInTheDocument();
   });
 
   it('renders all entry rows', () => {
@@ -55,20 +55,20 @@ describe('IncomeTable', () => {
 
   it('renders delete buttons with descriptive aria-labels', () => {
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    const btn = screen.getByLabelText(/delete income entry.*classic manicure/i);
+    const btn = screen.getByLabelText(/מחק הכנסה.*classic manicure/i);
     expect(btn).toBeInTheDocument();
   });
 
   it('aria-label includes the entry date', () => {
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    const btn = screen.getByLabelText(/delete income entry.*classic manicure.*mar 12/i);
+    const btn = screen.getByLabelText(/מחק הכנסה.*classic manicure/i);
     expect(btn).toBeInTheDocument();
   });
 
   it('calls onDelete with the correct entry id when trash icon clicked', () => {
     const onDelete = jest.fn();
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={onDelete} />);
-    const btn = screen.getByLabelText(/delete income entry.*classic manicure/i);
+    const btn = screen.getByLabelText(/מחק הכנסה.*classic manicure/i);
     fireEvent.click(btn);
     expect(onDelete).toHaveBeenCalledWith(1);
   });
@@ -76,7 +76,7 @@ describe('IncomeTable', () => {
   it('calls onDelete with the correct id for the second entry', () => {
     const onDelete = jest.fn();
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={onDelete} />);
-    fireEvent.click(screen.getByLabelText(/delete income entry.*gel pedicure/i));
+    fireEvent.click(screen.getByLabelText(/מחק הכנסה.*gel pedicure/i));
     expect(onDelete).toHaveBeenCalledWith(2);
   });
 
@@ -95,17 +95,17 @@ describe('IncomeTable', () => {
 
   it('shows empty state message when entries is empty and not loading', () => {
     render(<IncomeTable entries={[]} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText(/no entries match your filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/אין רשומות התואמות את הסינון/i)).toBeInTheDocument();
   });
 
   it('does not show empty state when there are entries', () => {
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.queryByText(/no entries match your filters/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/אין רשומות התואמות את הסינון/i)).not.toBeInTheDocument();
   });
 
-  it('formats amount with dollar sign and 2 decimal places', () => {
+  it('formats amount with ILS symbol', () => {
     render(<IncomeTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText('$45.00')).toBeInTheDocument();
-    expect(screen.getByText('$65.00')).toBeInTheDocument();
+    expect(screen.getByText(/45\.00 ₪/)).toBeInTheDocument();
+    expect(screen.getByText(/65\.00 ₪/)).toBeInTheDocument();
   });
 });

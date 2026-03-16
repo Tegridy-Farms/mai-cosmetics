@@ -66,14 +66,14 @@ describe('DeleteConfirmDialog', () => {
     jest.clearAllMocks();
   });
 
-  it('renders title "Delete this entry?"', () => {
+  it('renders title in Hebrew', () => {
     render(<DeleteConfirmDialog {...defaultProps} />);
-    expect(screen.getByText('Delete this entry?')).toBeInTheDocument();
+    expect(screen.getByText(/למחוק את הרשומה/)).toBeInTheDocument();
   });
 
-  it('renders body "This cannot be undone."', () => {
+  it('renders body in Hebrew', () => {
     render(<DeleteConfirmDialog {...defaultProps} />);
-    expect(screen.getByText('This cannot be undone.')).toBeInTheDocument();
+    expect(screen.getByText(/לא ניתן לבטל פעולה זו/)).toBeInTheDocument();
   });
 
   it('has role="alertdialog"', () => {
@@ -87,7 +87,7 @@ describe('DeleteConfirmDialog', () => {
     const labelledby = dialog.getAttribute('aria-labelledby');
     expect(labelledby).toBeTruthy();
     const titleEl = document.getElementById(labelledby!);
-    expect(titleEl?.textContent).toContain('Delete this entry?');
+    expect(titleEl?.textContent).toMatch(/למחוק את הרשומה/);
   });
 
   it('has aria-describedby attribute pointing to the description', () => {
@@ -96,37 +96,37 @@ describe('DeleteConfirmDialog', () => {
     const describedby = dialog.getAttribute('aria-describedby');
     expect(describedby).toBeTruthy();
     const descEl = document.getElementById(describedby!);
-    expect(descEl?.textContent).toContain('This cannot be undone.');
+    expect(descEl?.textContent).toContain('לא ניתן לבטל פעולה זו');
   });
 
   it('renders Cancel and Delete buttons', () => {
     render(<DeleteConfirmDialog {...defaultProps} />);
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ביטול/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /מחק/ })).toBeInTheDocument();
   });
 
   it('calls onClose when Cancel clicked', () => {
     const onClose = jest.fn();
     render(<DeleteConfirmDialog {...defaultProps} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /ביטול/ }));
     expect(onClose).toHaveBeenCalled();
   });
 
   it('calls onConfirm when Delete clicked', () => {
     const onConfirm = jest.fn();
     render(<DeleteConfirmDialog {...defaultProps} onConfirm={onConfirm} />);
-    fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /מחק/ }));
     expect(onConfirm).toHaveBeenCalled();
   });
 
   it('shows "Deleting…" text when isDeleting=true', () => {
     render(<DeleteConfirmDialog {...defaultProps} isDeleting={true} />);
-    expect(screen.getByText('Deleting…')).toBeInTheDocument();
+    expect(screen.getByText(/מוחק/)).toBeInTheDocument();
   });
 
   it('disables the Delete button when isDeleting=true', () => {
     render(<DeleteConfirmDialog {...defaultProps} isDeleting={true} />);
-    expect(screen.getByRole('button', { name: /deleting/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /מוחק/ })).toBeDisabled();
   });
 
   it('does not render dialog content when isOpen=false', () => {
@@ -136,7 +136,7 @@ describe('DeleteConfirmDialog', () => {
 
   it('does not render Cancel or Delete buttons when closed', () => {
     render(<DeleteConfirmDialog {...defaultProps} isOpen={false} />);
-    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ביטול/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /מחק/ })).not.toBeInTheDocument();
   });
 });

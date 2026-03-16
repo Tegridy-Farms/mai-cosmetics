@@ -33,36 +33,36 @@ describe("NavigationBar", () => {
   it("renders Mai Cosmetics brand name", () => {
     (usePathname as jest.Mock).mockReturnValue("/");
     render(<NavigationBar />);
-    expect(screen.getByText("Mai Cosmetics")).toBeInTheDocument();
+    expect(screen.getByText("מי קוסמטיקס")).toBeInTheDocument();
   });
 
   it("renders nav links for Dashboard, Income, Expenses", () => {
     (usePathname as jest.Mock).mockReturnValue("/");
     render(<NavigationBar />);
-    expect(screen.getByRole("link", { name: /dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /income/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /expenses/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /לוח בקרה/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /הכנסות/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /הוצאות/ })).toBeInTheDocument();
   });
 
   it("active link (pathname '/') has aria-current='page'", () => {
     (usePathname as jest.Mock).mockReturnValue("/");
     render(<NavigationBar />);
-    const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
+    const dashboardLink = screen.getByRole("link", { name: /לוח בקרה/ });
     expect(dashboardLink).toHaveAttribute("aria-current", "page");
   });
 
   it("active link (pathname '/income') has aria-current='page' on Income link", () => {
     (usePathname as jest.Mock).mockReturnValue("/income");
     render(<NavigationBar />);
-    const incomeLink = screen.getByRole("link", { name: /income/i });
+    const incomeLink = screen.getByRole("link", { name: /הכנסות/ });
     expect(incomeLink).toHaveAttribute("aria-current", "page");
   });
 
   it("active link does NOT have aria-current='page' on inactive links", () => {
     (usePathname as jest.Mock).mockReturnValue("/");
     render(<NavigationBar />);
-    const incomeLink = screen.getByRole("link", { name: /income/i });
-    const expensesLink = screen.getByRole("link", { name: /expenses/i });
+    const incomeLink = screen.getByRole("link", { name: /הכנסות/ });
+    const expensesLink = screen.getByRole("link", { name: /הוצאות/ });
     expect(incomeLink).not.toHaveAttribute("aria-current", "page");
     expect(expensesLink).not.toHaveAttribute("aria-current", "page");
   });

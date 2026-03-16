@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import IncomePage from '@/app/income/page';
 
@@ -154,18 +154,18 @@ describe('IncomePage', () => {
     jest.restoreAllMocks();
   });
 
-  it('renders "Income Entries" heading', async () => {
+  it('renders "Income Entries" heading in Hebrew', async () => {
     await act(async () => {
       render(<IncomePage />);
     });
-    expect(screen.getByRole('heading', { name: /income entries/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /רשומות הכנסות/ })).toBeInTheDocument();
   });
 
   it('renders "+ Add Income" button linking to /income/new', async () => {
     await act(async () => {
       render(<IncomePage />);
     });
-    const link = screen.getByText('+ Add Income').closest('a');
+    const link = screen.getByText(/הוספת הכנסה/).closest('a');
     expect(link).toHaveAttribute('href', '/income/new');
   });
 
@@ -173,14 +173,14 @@ describe('IncomePage', () => {
     await act(async () => {
       render(<IncomePage />);
     });
-    expect(screen.getByText('Export CSV')).toBeInTheDocument();
+    expect(screen.getByText(/ייצוא CSV/)).toBeInTheDocument();
   });
 
   it('"Export CSV" button links to /api/income/export', async () => {
     await act(async () => {
       render(<IncomePage />);
     });
-    const exportLink = screen.getByText('Export CSV').closest('a');
+    const exportLink = screen.getByText(/ייצוא CSV/).closest('a');
     expect(exportLink).toHaveAttribute('href', '/api/income/export');
   });
 
@@ -210,8 +210,8 @@ describe('IncomePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Classic Manicure')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete income entry.*classic manicure/i));
-    expect(screen.getByText('Delete this entry?')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/מחק הכנסה.*classic manicure/i));
+    expect(screen.getByText(/למחוק את הרשומה/)).toBeInTheDocument();
   });
 
   it('closes delete dialog on Cancel', async () => {
@@ -221,11 +221,11 @@ describe('IncomePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Classic Manicure')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete income entry.*classic manicure/i));
-    expect(screen.getByText('Delete this entry?')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    fireEvent.click(screen.getByLabelText(/מחק הכנסה.*classic manicure/i));
+    expect(screen.getByText(/למחוק את הרשומה/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /ביטול/ }));
     await waitFor(() => {
-      expect(screen.queryByText('Delete this entry?')).not.toBeInTheDocument();
+      expect(screen.queryByText(/למחוק את הרשומה/)).not.toBeInTheDocument();
     });
   });
 
@@ -278,9 +278,10 @@ describe('IncomePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Classic Manicure')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete income entry.*classic manicure/i));
+    fireEvent.click(screen.getByLabelText(/מחק הכנסה.*classic manicure/i));
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+      const dialog = screen.getByRole('alertdialog');
+      fireEvent.click(within(dialog).getByRole('button', { name: /מחק/ }));
     });
     await waitFor(() => {
       expect(screen.queryByText('Classic Manicure')).not.toBeInTheDocument();
@@ -321,12 +322,13 @@ describe('IncomePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Classic Manicure')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/delete income entry.*classic manicure/i));
+    fireEvent.click(screen.getByLabelText(/מחק הכנסה.*classic manicure/i));
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+      const dialog = screen.getByRole('alertdialog');
+      fireEvent.click(within(dialog).getByRole('button', { name: /מחק/ }));
     });
     await waitFor(() => {
-      expect(screen.getByText(/could not delete/i)).toBeInTheDocument();
+      expect(screen.getByText(/לא ניתן למחוק/)).toBeInTheDocument();
     });
   });
 
@@ -358,8 +360,8 @@ describe('IncomePage', () => {
     });
     // Filter bar controls exist
     expect(screen.getByTestId('service_type_id')).toBeInTheDocument();
-    expect(screen.getByLabelText(/^from$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^to$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^מ$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^עד$/)).toBeInTheDocument();
   });
 
   it('shows empty state when no entries returned', async () => {
@@ -386,7 +388,7 @@ describe('IncomePage', () => {
       render(<IncomePage />);
     });
     await waitFor(() => {
-      expect(screen.getByText(/no entries match your filters/i)).toBeInTheDocument();
+      expect(screen.getByText(/אין רשומות התואמות את הסינון/)).toBeInTheDocument();
     });
   });
 });

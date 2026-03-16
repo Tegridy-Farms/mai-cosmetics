@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import type { ServiceTypeMetric } from "@/types";
+import { formatAmount } from "@/lib/format";
+import { t } from "@/lib/translations";
 
 interface ServiceTypeTableProps {
   data: ServiceTypeMetric[];
@@ -10,17 +12,13 @@ interface ServiceTypeTableProps {
 type SortKey = keyof ServiceTypeMetric;
 type SortDir = "ascending" | "descending";
 
-function formatAmount(value: number): string {
-  return `$${value.toFixed(2)}`;
-}
-
 const columns: { key: SortKey; label: string }[] = [
-  { key: "name", label: "Service Type" },
-  { key: "total_sessions", label: "Total Sessions" },
-  { key: "total_hours", label: "Total Hours" },
-  { key: "gross_income", label: "Gross Income" },
-  { key: "expense_share", label: "Expense Share" },
-  { key: "net_income", label: "Net Income" },
+  { key: "name", label: t.table.serviceType },
+  { key: "total_sessions", label: t.table.totalSessions },
+  { key: "total_hours", label: t.table.totalHours },
+  { key: "gross_income", label: t.table.grossIncome },
+  { key: "expense_share", label: t.table.expenseShare },
+  { key: "net_income", label: t.table.netIncome },
 ];
 
 export function ServiceTypeTable({ data }: ServiceTypeTableProps) {
@@ -60,13 +58,13 @@ export function ServiceTypeTable({ data }: ServiceTypeTableProps) {
                 scope="col"
                 aria-sort={sortKey === col.key ? sortDir : "none"}
                 onClick={() => handleSort(col.key)}
-                className="text-[12px] font-semibold uppercase text-[#6B7280] text-left px-4 py-3 cursor-pointer select-none whitespace-nowrap"
+                className="text-[12px] font-semibold uppercase text-[#6B7280] text-start px-4 py-3 cursor-pointer select-none whitespace-nowrap"
               >
                 {col.label}
                 {sortKey === col.key ? (
-                  <span className="ml-1">{sortDir === "descending" ? "↓" : "↑"}</span>
+                  <span className="ms-1">{sortDir === "descending" ? "↓" : "↑"}</span>
                 ) : (
-                  <span className="ml-1 opacity-40">↕</span>
+                  <span className="ms-1 opacity-40">↕</span>
                 )}
               </th>
             ))}

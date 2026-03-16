@@ -37,8 +37,9 @@ const config: Config = {
         focusRing: '#3F83F8',
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        heebo: ['var(--font-heebo)', 'Heebo', 'sans-serif'],
+        sans: ['var(--font-heebo)', 'Heebo', 'sans-serif'],
+        mono: ['var(--font-mono)', 'JetBrains Mono', 'monospace'],
       },
     },
   },

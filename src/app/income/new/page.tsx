@@ -1,4 +1,5 @@
 import { IncomeForm } from '@/components/forms/IncomeForm';
+import { t } from '@/lib/translations';
 
 interface ServiceType {
   id: number;
@@ -22,8 +23,8 @@ export default async function IncomeNewPage() {
 
   return (
     <main className="pt-12 max-w-[560px] mx-auto px-4">
-      <p className="text-[12px] text-[#6B7280] mb-4">Dashboard → Log Income</p>
-      <h1 className="text-[30px] font-bold mb-6">Log Income</h1>
+      <p className="text-[12px] text-[#6B7280] mb-4">{t.pages.breadcrumbLogIncome}</p>
+      <h1 className="text-[30px] font-bold mb-6">{t.pages.logIncome}</h1>
       <IncomeForm serviceTypes={serviceTypes} />
     </main>
   );

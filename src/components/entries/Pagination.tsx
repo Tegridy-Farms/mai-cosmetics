@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/translations';
 
 interface PaginationProps {
   total: number;
@@ -23,7 +24,7 @@ export function Pagination({ total, page, pageSize = 20, onChange }: PaginationP
   return (
     <div className="flex items-center justify-between py-3 px-4">
       <span className="text-[12px] font-normal text-[#6B7280]">
-        Showing {start}–{end} of {total} entries
+        {t.entries.showingEntries(start, end, total)}
       </span>
       <div className="flex gap-2">
         <Button
@@ -32,7 +33,7 @@ export function Pagination({ total, page, pageSize = 20, onChange }: PaginationP
           disabled={page <= 1}
           className="min-w-[80px] h-[36px]"
         >
-          ← Prev
+          ‹ {t.entries.prev}
         </Button>
         <Button
           variant="ghost"
@@ -40,7 +41,7 @@ export function Pagination({ total, page, pageSize = 20, onChange }: PaginationP
           disabled={page >= totalPages}
           className="min-w-[80px] h-[36px]"
         >
-          Next →
+          {t.entries.next} ›
         </Button>
       </div>
     </div>

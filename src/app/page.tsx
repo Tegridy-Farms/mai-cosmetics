@@ -2,6 +2,7 @@ import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { ServiceTypeTable } from "@/components/dashboard/ServiceTypeTable";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { EmptyState } from "@/components/ui/empty-state";
+import { t } from "@/lib/translations";
 import type { DashboardMetrics, MonthlyTrend } from "@/types";
 
 const emptyMetrics: DashboardMetrics = {
@@ -53,13 +54,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 max-w-[1200px]">
-      <h1 className="text-[30px] font-bold text-[#111827] mb-6">Dashboard</h1>
+      <h1 className="text-[30px] font-bold text-[#111827] mb-6">{t.nav.dashboard}</h1>
 
       {isEmpty ? (
         <EmptyState
-          title="No data yet"
-          description="Start logging income and expenses to see your dashboard metrics."
-          ctaLabel="Log Income"
+          title={t.dashboard.noDataYet}
+          description={t.dashboard.startLogging}
+          ctaLabel={t.dashboard.logIncome}
           ctaHref="/income/new"
         />
       ) : (
@@ -67,12 +68,12 @@ export default async function DashboardPage() {
           <SummaryCards initialMonthData={monthData} initialAllData={allData} />
 
           <h2 className="text-[20px] font-semibold text-[#111827] mt-8 mb-4">
-            Income by Service Type
+            {t.dashboard.incomeByServiceType}
           </h2>
           <ServiceTypeTable data={monthData.by_service_type} />
 
           <h2 className="text-[20px] font-semibold text-[#111827] mt-8 mb-4">
-            Monthly Trend
+            {t.dashboard.monthlyTrend}
           </h2>
           <TrendChart data={trendData} />
         </>

@@ -35,7 +35,7 @@ describe('Button', () => {
 
   it('shows spinner and "Saving…" text when loading', () => {
     render(<Button loading>Save</Button>);
-    expect(screen.getByText('Saving…')).toBeInTheDocument();
+    expect(screen.getByText(/שומר/)).toBeInTheDocument();
   });
 
   it('is disabled when loading', () => {

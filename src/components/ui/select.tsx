@@ -37,7 +37,7 @@ export function Select({
         id={id}
         aria-invalid={ariaInvalid}
         aria-describedby={ariaDescribedby}
-        className={`w-full h-[44px] px-3 flex items-center justify-between border rounded-[6px] outline-none transition-colors text-left ${
+        className={`w-full h-[44px] px-3 flex items-center justify-between border rounded-[6px] outline-none transition-colors text-start ${
           error
             ? 'border-[#C81E1E] focus:ring-2 focus:ring-[#C81E1E] focus:border-[#C81E1E]'
             : 'border-[#E5E7EB] focus:ring-2 focus:ring-[#3F83F8] focus:border-[#3F83F8]'

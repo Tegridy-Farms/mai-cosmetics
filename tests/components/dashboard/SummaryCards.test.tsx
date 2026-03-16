@@ -23,23 +23,22 @@ const mockAllData = {
 };
 
 describe("SummaryCards", () => {
-  it("renders all 4 card labels", () => {
+  it("renders all 4 card labels in Hebrew", () => {
     render(
       <SummaryCards initialMonthData={mockMonthData} initialAllData={mockAllData} />
     );
-    expect(screen.getByText(/gross income/i)).toBeInTheDocument();
-    expect(screen.getByText(/total expenses/i)).toBeInTheDocument();
-    expect(screen.getByText(/net income \/ hr/i)).toBeInTheDocument();
-    // net income label (not the /hr one)
-    const netIncomeLabels = screen.getAllByText(/net income/i);
-    expect(netIncomeLabels.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/הכנסות ברוטו/)).toBeInTheDocument();
+    expect(screen.getByText(/סה״כ הוצאות/)).toBeInTheDocument();
+    const netLabels = screen.getAllByText(/הכנסה נטו/);
+    expect(netLabels.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/הכנסה נטו \/ שעה/)).toBeInTheDocument();
   });
 
   it("shows 'This Month' toggle active by default", () => {
     render(
       <SummaryCards initialMonthData={mockMonthData} initialAllData={mockAllData} />
     );
-    const thisMonthBtn = screen.getByRole("button", { name: /this month/i });
+    const thisMonthBtn = screen.getByRole("button", { name: /החודש/ });
     expect(thisMonthBtn).toHaveClass("bg-[#EBF5FB]");
   });
 
@@ -47,9 +46,9 @@ describe("SummaryCards", () => {
     render(
       <SummaryCards initialMonthData={mockMonthData} initialAllData={mockAllData} />
     );
-    const allTimeBtn = screen.getByRole("button", { name: /all time/i });
+    const allTimeBtn = screen.getByRole("button", { name: /הכל/ });
     fireEvent.click(allTimeBtn);
-    expect(screen.getByText("$5000.00")).toBeInTheDocument();
+    expect(screen.getByText(/5,000\.00 ₪/)).toBeInTheDocument();
   });
 
   it("positive net income has green color class text-[#057A55]", () => {
@@ -70,21 +69,21 @@ describe("SummaryCards", () => {
     expect(netValue).toHaveClass("text-[#C81E1E]");
   });
 
-  it("net income per hour card has aria-label containing 'per hour'", () => {
+  it("net income per hour card has aria-label in Hebrew", () => {
     render(
       <SummaryCards initialMonthData={mockMonthData} initialAllData={mockAllData} />
     );
-    const netHrEl = screen.getByLabelText(/per hour/i);
+    const netHrEl = screen.getByLabelText(/שעה/);
     expect(netHrEl).toBeInTheDocument();
   });
 
-  it("all amounts formatted as '$X.XX'", () => {
+  it("all amounts formatted with ILS", () => {
     render(
       <SummaryCards initialMonthData={mockMonthData} initialAllData={mockAllData} />
     );
-    expect(screen.getByText("$1500.00")).toBeInTheDocument();
-    expect(screen.getByText("$300.00")).toBeInTheDocument();
-    expect(screen.getByText("$1200.00")).toBeInTheDocument();
-    expect(screen.getByText("$25.00")).toBeInTheDocument();
+    expect(screen.getByText(/1,500\.00 ₪/)).toBeInTheDocument();
+    expect(screen.getByText(/300\.00 ₪/)).toBeInTheDocument();
+    expect(screen.getByText(/1,200\.00 ₪/)).toBeInTheDocument();
+    expect(screen.getByText(/25\.00 ₪/)).toBeInTheDocument();
   });
 });

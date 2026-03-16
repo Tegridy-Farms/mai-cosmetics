@@ -35,14 +35,14 @@ const mockData: ServiceTypeMetric[] = [
 ];
 
 describe("ServiceTypeTable", () => {
-  it("renders table with correct column headers", () => {
+  it("renders table with correct column headers in Hebrew", () => {
     render(<ServiceTypeTable data={mockData} />);
-    expect(screen.getByText(/service type/i)).toBeInTheDocument();
-    expect(screen.getByText(/total sessions/i)).toBeInTheDocument();
-    expect(screen.getByText(/total hours/i)).toBeInTheDocument();
-    expect(screen.getByText(/gross income/i)).toBeInTheDocument();
-    expect(screen.getByText(/expense share/i)).toBeInTheDocument();
-    expect(screen.getByText(/net income/i)).toBeInTheDocument();
+    expect(screen.getByText(/סוג שירות/)).toBeInTheDocument();
+    expect(screen.getByText(/סה״כ טיפולים/)).toBeInTheDocument();
+    expect(screen.getByText(/סה״כ שעות/)).toBeInTheDocument();
+    expect(screen.getByText(/הכנסות ברוטו/)).toBeInTheDocument();
+    expect(screen.getByText(/חלק הוצאות/)).toBeInTheDocument();
+    expect(screen.getByText(/הכנסה נטו/)).toBeInTheDocument();
   });
 
   it("renders one row per service type metric", () => {
@@ -63,8 +63,7 @@ describe("ServiceTypeTable", () => {
 
   it("clicking 'Net Income' header toggles sort to ascending", () => {
     render(<ServiceTypeTable data={mockData} />);
-    // find the net income th
-    const netIncomeHeader = screen.getByRole("columnheader", { name: /net income/i });
+    const netIncomeHeader = screen.getByRole("columnheader", { name: /הכנסה נטו/ });
     fireEvent.click(netIncomeHeader);
     const rows = screen.getAllByRole("row");
     // Now ascending: Gel Nails (-100), Pedicure (250), Manicure (400)
@@ -95,7 +94,7 @@ describe("ServiceTypeTable", () => {
 
   it("sorted column has aria-sort attribute", () => {
     render(<ServiceTypeTable data={mockData} />);
-    const netIncomeHeader = screen.getByRole("columnheader", { name: /net income/i });
+    const netIncomeHeader = screen.getByRole("columnheader", { name: /הכנסה נטו/ });
     expect(netIncomeHeader).toHaveAttribute("aria-sort", "descending");
   });
 });

@@ -66,51 +66,51 @@ describe('ExpenseForm', () => {
 
   it('renders all 4 fields', () => {
     render(<ExpenseForm />);
-    expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/תיאור/)).toBeInTheDocument();
     expect(screen.getByTestId('category')).toBeInTheDocument();
-    expect(screen.getByLabelText(/date/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/amount/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/תאריך/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/סכום/)).toBeInTheDocument();
   });
 
-  it('renders the 4 category options', () => {
+  it('renders the 4 category options in Hebrew', () => {
     render(<ExpenseForm />);
     const select = screen.getByTestId('category');
     expect(select.querySelectorAll('option')).toHaveLength(5); // 4 + placeholder
-    expect(screen.getByText('Equipment')).toBeInTheDocument();
-    expect(screen.getByText('Materials')).toBeInTheDocument();
-    expect(screen.getByText('Consumables')).toBeInTheDocument();
-    expect(screen.getByText('Other')).toBeInTheDocument();
+    expect(screen.getByText('ציוד')).toBeInTheDocument();
+    expect(screen.getByText('חומרים')).toBeInTheDocument();
+    expect(screen.getByText('מתכלים')).toBeInTheDocument();
+    expect(screen.getByText('אחר')).toBeInTheDocument();
   });
 
   it('shows validation error when description is empty', async () => {
     render(<ExpenseForm />);
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    fireEvent.click(screen.getByRole('button', { name: /שמירה/ }));
     await waitFor(() => {
-      expect(screen.getByText(/description is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/נדרש תיאור/)).toBeInTheDocument();
     });
   });
 
-  it('shows "Amount must be greater than 0" for amount <= 0', async () => {
+  it('shows amount validation error for amount <= 0', async () => {
     render(<ExpenseForm />);
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Test Expense' } });
+      fireEvent.change(screen.getByLabelText(/תיאור/), { target: { value: 'Test Expense' } });
       fireEvent.change(screen.getByTestId('category'), { target: { value: 'materials' } });
-      fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-03-15' } });
-      fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '0' } });
+      fireEvent.change(screen.getByLabelText(/תאריך/), { target: { value: '2026-03-15' } });
+      fireEvent.change(screen.getByLabelText(/סכום/), { target: { value: '0' } });
     });
     await act(async () => {
-      fireEvent.submit(screen.getByRole('button', { name: /save/i }).closest('form')!);
+      fireEvent.submit(screen.getByRole('button', { name: /שמירה/ }).closest('form')!);
     });
     await waitFor(() => {
-      expect(screen.getByText(/amount must be greater than 0/i)).toBeInTheDocument();
+      expect(screen.getByText(/הסכום חייב להיות גדול מ-0/)).toBeInTheDocument();
     });
   });
 
   it('does not submit when validation fails', async () => {
     render(<ExpenseForm />);
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    fireEvent.click(screen.getByRole('button', { name: /שמירה/ }));
     await waitFor(() => {
-      expect(screen.getByText(/description is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/נדרש תיאור/)).toBeInTheDocument();
     });
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -121,12 +121,12 @@ describe('ExpenseForm', () => {
       json: async () => ({ id: 1 }),
     });
     render(<ExpenseForm />);
-    fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Office Supplies' } });
+    fireEvent.change(screen.getByLabelText(/תיאור/), { target: { value: 'Office Supplies' } });
     fireEvent.change(screen.getByTestId('category'), { target: { value: 'materials' } });
-    fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-03-15' } });
-    fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '25.99' } });
+    fireEvent.change(screen.getByLabelText(/תאריך/), { target: { value: '2026-03-15' } });
+    fireEvent.change(screen.getByLabelText(/סכום/), { target: { value: '25.99' } });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      fireEvent.click(screen.getByRole('button', { name: /שמירה/ }));
     });
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/expenses', expect.objectContaining({
@@ -140,23 +140,23 @@ describe('ExpenseForm', () => {
     expect(body.amount).toBe(25.99);
   });
 
-  it('shows "Expense logged" toast on success and resets form', async () => {
+  it('shows success toast on success and resets form', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ id: 1 }),
     });
     render(<ExpenseForm />);
-    fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Office Supplies' } });
+    fireEvent.change(screen.getByLabelText(/תיאור/), { target: { value: 'Office Supplies' } });
     fireEvent.change(screen.getByTestId('category'), { target: { value: 'materials' } });
-    fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-03-15' } });
-    fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '25.99' } });
+    fireEvent.change(screen.getByLabelText(/תאריך/), { target: { value: '2026-03-15' } });
+    fireEvent.change(screen.getByLabelText(/סכום/), { target: { value: '25.99' } });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      fireEvent.click(screen.getByRole('button', { name: /שמירה/ }));
     });
     await waitFor(() => {
-      expect(screen.getByText('Expense logged')).toBeInTheDocument();
+      expect(screen.getByText(/ההוצאה נרשמה/)).toBeInTheDocument();
     });
-    expect((screen.getByLabelText(/description/i) as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText(/תיאור/) as HTMLInputElement).value).toBe('');
   });
 
   it('shows error toast on 500 response and retains field values', async () => {
@@ -166,22 +166,22 @@ describe('ExpenseForm', () => {
       json: async () => ({ error: 'Server error' }),
     });
     render(<ExpenseForm />);
-    fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Office Supplies' } });
+    fireEvent.change(screen.getByLabelText(/תיאור/), { target: { value: 'Office Supplies' } });
     fireEvent.change(screen.getByTestId('category'), { target: { value: 'materials' } });
-    fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-03-15' } });
-    fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '25.99' } });
+    fireEvent.change(screen.getByLabelText(/תאריך/), { target: { value: '2026-03-15' } });
+    fireEvent.change(screen.getByLabelText(/סכום/), { target: { value: '25.99' } });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      fireEvent.click(screen.getByRole('button', { name: /שמירה/ }));
     });
     await waitFor(() => {
-      expect(screen.getByText('Could not save. Please try again.')).toBeInTheDocument();
+      expect(screen.getByText(/לא ניתן לשמור/)).toBeInTheDocument();
     });
-    expect((screen.getByLabelText(/description/i) as HTMLInputElement).value).toBe('Office Supplies');
+    expect((screen.getByLabelText(/תיאור/) as HTMLInputElement).value).toBe('Office Supplies');
   });
 
-  it('"← Back to Dashboard" link points to /', () => {
+  it('Back to Dashboard link points to /', () => {
     render(<ExpenseForm />);
-    const backLink = screen.getByText('← Back to Dashboard');
+    const backLink = screen.getByText(/חזרה ללוח הבקרה/);
     expect(backLink.closest('a')).toHaveAttribute('href', '/');
   });
 });

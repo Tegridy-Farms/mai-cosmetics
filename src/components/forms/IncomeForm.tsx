@@ -8,14 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast, ToastContainer } from '@/components/ui/toast';
+import { t } from '@/lib/translations';
 
-const FormSchema = z.object({
-  service_name: z.string().min(1, 'Service name is required'),
-  service_type_id: z.string().min(1, 'Service type is required'),
-  date: z.string().min(1, 'Date is required'),
-  duration_minutes: z.number().positive('Duration must be greater than 0 minutes').int('Duration must be a whole number'),
-  amount: z.number().positive('Amount must be greater than 0'),
-});
+function createFormSchema() {
+  return z.object({
+    service_name: z.string().min(1, t.forms.serviceNameRequired),
+    service_type_id: z.string().min(1, t.forms.serviceTypeRequired),
+    date: z.string().min(1, t.forms.dateRequired),
+    duration_minutes: z.number()
+      .positive(t.forms.durationRequired)
+      .int(t.forms.durationWhole),
+    amount: z.number().positive(t.forms.amountRequired),
+  });
+}
+
+const FormSchema = createFormSchema();
 
 type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
 
@@ -85,18 +92,18 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
       });
 
       if (!response.ok) {
-        showToast('Could not save. Please try again.', 'error');
+        showToast(t.toast.couldNotSave, 'error');
         return;
       }
 
-      showToast('Income logged', 'success');
+      showToast(t.toast.incomeLogged, 'success');
       setServiceName('');
       setServiceTypeId('');
       setDate(new Date().toISOString().split('T')[0]);
       setDurationMinutes('');
       setAmount('');
     } catch {
-      showToast('Could not save. Please try again.', 'error');
+      showToast(t.toast.couldNotSave, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +119,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
         <div className="flex flex-col gap-4">
           {/* Service Name */}
           <div>
-            <Label htmlFor="service_name">Service Name</Label>
+            <Label htmlFor="service_name">{t.forms.serviceName}</Label>
             <Input
               id="service_name"
               type="text"
@@ -132,11 +139,11 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
 
           {/* Service Type */}
           <div>
-            <Label htmlFor="service_type_id">Service Type</Label>
+            <Label htmlFor="service_type_id">{t.forms.serviceType}</Label>
             <Select
               id="service_type_id"
               options={serviceTypeOptions}
-              placeholder="Select service type"
+              placeholder={t.forms.selectServiceType}
               value={serviceTypeId}
               onValueChange={setServiceTypeId}
               error={!!errors.service_type_id}
@@ -153,7 +160,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
 
           {/* Date */}
           <div>
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{t.forms.date}</Label>
             <Input
               id="date"
               type="date"
@@ -173,7 +180,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
 
           {/* Duration */}
           <div>
-            <Label htmlFor="duration_minutes">Duration (min)</Label>
+            <Label htmlFor="duration_minutes">{t.forms.durationMin}</Label>
             <Input
               id="duration_minutes"
               type="number"
@@ -194,10 +201,10 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
 
           {/* Amount */}
           <div>
-            <Label htmlFor="amount">Amount (USD)</Label>
+            <Label htmlFor="amount">{t.forms.amountIls}</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
-                $
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
+                ₪
               </span>
               <Input
                 id="amount"
@@ -210,7 +217,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
                 aria-invalid={errors.amount ? 'true' : undefined}
                 aria-describedby={errors.amount ? 'amount-error' : undefined}
                 disabled={isSubmitting}
-                className="pl-7"
+                className="ps-7"
               />
             </div>
             {errors.amount && (
@@ -221,14 +228,14 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
           </div>
 
           <Button type="submit" variant="primary" loading={isSubmitting} className="w-full">
-            Save
+            {t.forms.save}
           </Button>
 
           <Link
             href="/"
             className="block text-center text-[#1A56DB] underline hover:text-[#1E429F] text-sm"
           >
-            ← Back to Dashboard
+            {t.forms.backToDashboard}
           </Link>
         </div>
       </form>

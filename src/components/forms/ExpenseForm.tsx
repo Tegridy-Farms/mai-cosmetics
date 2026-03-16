@@ -8,22 +8,27 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast, ToastContainer } from '@/components/ui/toast';
+import { t } from '@/lib/translations';
 
 const CATEGORY_OPTIONS = [
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'materials', label: 'Materials' },
-  { value: 'consumables', label: 'Consumables' },
-  { value: 'other', label: 'Other' },
+  { value: 'equipment', label: t.categories.equipment },
+  { value: 'materials', label: t.categories.materials },
+  { value: 'consumables', label: t.categories.consumables },
+  { value: 'other', label: t.categories.other },
 ];
 
-const FormSchema = z.object({
-  description: z.string().min(1, 'Description is required'),
-  category: z.enum(['equipment', 'materials', 'consumables', 'other'], {
-    errorMap: () => ({ message: 'Category is required' }),
-  }),
-  date: z.string().min(1, 'Date is required'),
-  amount: z.number().positive('Amount must be greater than 0'),
-});
+function createFormSchema() {
+  return z.object({
+    description: z.string().min(1, t.forms.descriptionRequired),
+    category: z.enum(['equipment', 'materials', 'consumables', 'other'], {
+      errorMap: () => ({ message: t.forms.categoryRequired }),
+    }),
+    date: z.string().min(1, t.forms.dateRequired),
+    amount: z.number().positive(t.forms.amountRequired),
+  });
+}
+
+const FormSchema = createFormSchema();
 
 type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
 
@@ -71,17 +76,17 @@ export function ExpenseForm() {
       });
 
       if (!response.ok) {
-        showToast('Could not save. Please try again.', 'error');
+        showToast(t.toast.couldNotSave, 'error');
         return;
       }
 
-      showToast('Expense logged', 'success');
+      showToast(t.toast.expenseLogged, 'success');
       setDescription('');
       setCategory('');
       setDate(new Date().toISOString().split('T')[0]);
       setAmount('');
     } catch {
-      showToast('Could not save. Please try again.', 'error');
+      showToast(t.toast.couldNotSave, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +102,7 @@ export function ExpenseForm() {
         <div className="flex flex-col gap-4">
           {/* Description */}
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t.forms.description}</Label>
             <Input
               id="description"
               type="text"
@@ -117,11 +122,11 @@ export function ExpenseForm() {
 
           {/* Category */}
           <div>
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">{t.forms.category}</Label>
             <Select
               id="category"
               options={CATEGORY_OPTIONS}
-              placeholder="Select category"
+              placeholder={t.forms.selectCategory}
               value={category}
               onValueChange={setCategory}
               error={!!errors.category}
@@ -138,7 +143,7 @@ export function ExpenseForm() {
 
           {/* Date */}
           <div>
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{t.forms.date}</Label>
             <Input
               id="date"
               type="date"
@@ -158,10 +163,10 @@ export function ExpenseForm() {
 
           {/* Amount */}
           <div>
-            <Label htmlFor="amount">Amount (USD)</Label>
+            <Label htmlFor="amount">{t.forms.amountIls}</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
-                $
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none select-none">
+                ₪
               </span>
               <Input
                 id="amount"
@@ -174,7 +179,7 @@ export function ExpenseForm() {
                 aria-invalid={errors.amount ? 'true' : undefined}
                 aria-describedby={errors.amount ? 'amount-error' : undefined}
                 disabled={isSubmitting}
-                className="pl-7"
+                className="ps-7"
               />
             </div>
             {errors.amount && (
@@ -185,14 +190,14 @@ export function ExpenseForm() {
           </div>
 
           <Button type="submit" variant="primary" loading={isSubmitting} className="w-full">
-            Save
+            {t.forms.save}
           </Button>
 
           <Link
             href="/"
             className="block text-center text-[#1A56DB] underline hover:text-[#1E429F] text-sm"
           >
-            ← Back to Dashboard
+            {t.forms.backToDashboard}
           </Link>
         </div>
       </form>

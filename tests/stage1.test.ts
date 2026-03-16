@@ -231,7 +231,7 @@ describe('tailwind.config.ts', () => {
   it('has text primary #111827', () => expect(src).toMatch(/#111827/i));
   it('has text muted #6B7280', () => expect(src).toMatch(/#6B7280/i));
   it('has focus ring #3F83F8', () => expect(src).toMatch(/#3F83F8/i));
-  it('has custom font family inter', () => expect(src).toMatch(/inter/i));
+  it('has custom font family heebo', () => expect(src).toMatch(/heebo/i));
   it('has custom font family mono', () => expect(src).toMatch(/mono/i));
 });
 
@@ -239,7 +239,7 @@ describe('src/app/layout.tsx', () => {
   const src = readFile('src/app/layout.tsx');
   it('file exists', () => expect(fileExists('src/app/layout.tsx')).toBe(true));
   it('imports from next/font/google', () => expect(src).toMatch(/from ['"]next\/font\/google['"]/));
-  it('loads Inter font', () => expect(src).toMatch(/Inter/));
+  it('loads Heebo font', () => expect(src).toMatch(/Heebo/));
   it('loads JetBrains_Mono font', () => expect(src).toMatch(/JetBrains_Mono|JetBrainsMono/));
 });
 

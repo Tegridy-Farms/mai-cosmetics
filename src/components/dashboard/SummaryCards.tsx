@@ -2,14 +2,12 @@
 
 import React, { useState } from "react";
 import type { DashboardMetrics } from "@/types";
+import { formatAmount } from "@/lib/format";
+import { t } from "@/lib/translations";
 
 interface SummaryCardsProps {
   initialMonthData: DashboardMetrics;
   initialAllData: DashboardMetrics;
-}
-
-function formatAmount(value: number): string {
-  return `$${value.toFixed(2)}`;
 }
 
 interface CardProps {
@@ -33,7 +31,7 @@ function SummaryCard({ label, value, colorClass, suffix, ariaLabel, testId }: Ca
         aria-label={ariaLabel}
       >
         {formatAmount(value)}
-        {suffix && <span className="text-[20px] font-normal ml-1">{suffix}</span>}
+        {suffix && <span className="text-[20px] font-normal ms-1">{suffix}</span>}
       </p>
     </div>
   );
@@ -62,7 +60,7 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
               : "text-[#6B7280] hover:bg-[#F9FAFB]"
           }`}
         >
-          This Month
+          {t.dashboard.thisMonth}
         </button>
         <button
           onClick={() => setPeriod("all")}
@@ -72,34 +70,34 @@ export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsP
               : "text-[#6B7280] hover:bg-[#F9FAFB]"
           }`}
         >
-          All Time
+          {t.dashboard.allTime}
         </button>
       </div>
 
       {/* Cards grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard
-          label="Gross Income"
+          label={t.dashboard.grossIncome}
           value={data.gross_income}
           colorClass="text-[#111827]"
         />
         <SummaryCard
-          label="Total Expenses"
+          label={t.dashboard.totalExpenses}
           value={data.total_expenses}
           colorClass="text-[#111827]"
         />
         <SummaryCard
-          label="Net Income"
+          label={t.dashboard.netIncome}
           value={data.net_income}
           colorClass={netIncomeColor}
           testId="net-income-value"
         />
         <SummaryCard
-          label="Net Income / hr"
+          label={t.dashboard.netIncomePerHour}
           value={data.net_per_hour}
           colorClass="text-[#111827]"
-          suffix="/ hr"
-          ariaLabel={`Net income per hour: ${formatAmount(data.net_per_hour)} per hour`}
+          suffix={t.dashboard.perHour}
+          ariaLabel={`${t.dashboard.netIncomePerHour}: ${formatAmount(data.net_per_hour)}`}
           testId="net-per-hour-value"
         />
       </div>

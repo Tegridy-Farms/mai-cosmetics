@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Heebo, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { NavigationBar } from '@/components/NavigationBar';
+import { t } from '@/lib/translations';
 
-const inter = Inter({
-  subsets: ['latin'],
+const heebo = Heebo({
+  subsets: ['hebrew', 'latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-inter',
+  variable: '--font-heebo',
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -16,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Mai Cosmetics',
-  description: 'Mai Cosmetics Business Management System',
+  title: t.nav.maiCosmetics,
+  description: 'מערכת ניהול עסקי - מי קוסמטיקס',
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="he" dir="rtl" className={`${heebo.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-[#F9FAFB] text-[#111827]">
         <div className="flex min-h-screen">
           <NavigationBar />

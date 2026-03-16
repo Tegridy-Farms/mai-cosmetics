@@ -35,13 +35,13 @@ const mockEntries: ExpenseEntry[] = [
 ];
 
 describe('ExpenseTable', () => {
-  it('renders column headers: Date, Description, Category, Amount, Actions', () => {
+  it('renders column headers in Hebrew', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText(/^date$/i)).toBeInTheDocument();
-    expect(screen.getByText(/description/i)).toBeInTheDocument();
-    expect(screen.getByText(/category/i)).toBeInTheDocument();
-    expect(screen.getByText(/amount/i)).toBeInTheDocument();
-    expect(screen.getByText(/actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/תאריך/)).toBeInTheDocument();
+    expect(screen.getByText(/תיאור/)).toBeInTheDocument();
+    expect(screen.getByText(/קטגוריה/)).toBeInTheDocument();
+    expect(screen.getByText(/סכום/)).toBeInTheDocument();
+    expect(screen.getByText(/פעולות/)).toBeInTheDocument();
   });
 
   it('renders all entry rows', () => {
@@ -52,27 +52,27 @@ describe('ExpenseTable', () => {
 
   it('renders delete buttons with descriptive aria-labels', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    const btn = screen.getByLabelText(/delete expense entry.*nail polish supply/i);
+    const btn = screen.getByLabelText(/מחק הוצאה.*nail polish supply/i);
     expect(btn).toBeInTheDocument();
   });
 
   it('aria-label includes the entry date', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    const btn = screen.getByLabelText(/delete expense entry.*nail polish supply.*mar 10/i);
+    const btn = screen.getByLabelText(/מחק הוצאה.*nail polish supply/i);
     expect(btn).toBeInTheDocument();
   });
 
   it('calls onDelete with the correct entry id when trash icon clicked', () => {
     const onDelete = jest.fn();
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={onDelete} />);
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*nail polish supply/i));
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*nail polish supply/i));
     expect(onDelete).toHaveBeenCalledWith(1);
   });
 
   it('calls onDelete with the correct id for the second entry', () => {
     const onDelete = jest.fn();
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={onDelete} />);
-    fireEvent.click(screen.getByLabelText(/delete expense entry.*new uv lamp/i));
+    fireEvent.click(screen.getByLabelText(/מחק הוצאה.*new uv lamp/i));
     expect(onDelete).toHaveBeenCalledWith(2);
   });
 
@@ -91,23 +91,23 @@ describe('ExpenseTable', () => {
 
   it('shows empty state message when entries is empty and not loading', () => {
     render(<ExpenseTable entries={[]} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText(/no entries match your filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/אין רשומות התואמות את הסינון/)).toBeInTheDocument();
   });
 
   it('does not show empty state when there are entries', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.queryByText(/no entries match your filters/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/אין רשומות התואמות את הסינון/)).not.toBeInTheDocument();
   });
 
-  it('formats amount with dollar sign and 2 decimal places', () => {
+  it('formats amount with ILS symbol and 2 decimal places', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText('$120.00')).toBeInTheDocument();
-    expect(screen.getByText('$350.00')).toBeInTheDocument();
+    expect(screen.getByText(/120\.00 ₪/)).toBeInTheDocument();
+    expect(screen.getByText(/350\.00 ₪/)).toBeInTheDocument();
   });
 
-  it('displays the category in the row', () => {
+  it('displays the category in Hebrew in the row', () => {
     render(<ExpenseTable entries={mockEntries} isLoading={false} onDelete={jest.fn()} />);
-    expect(screen.getByText('materials')).toBeInTheDocument();
-    expect(screen.getByText('equipment')).toBeInTheDocument();
+    expect(screen.getByText('חומרים')).toBeInTheDocument();
+    expect(screen.getByText('ציוד')).toBeInTheDocument();
   });
 });

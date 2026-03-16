@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/translations';
 import type { FilterState, ServiceType } from '@/types';
 
 interface FilterBarProps {
@@ -15,10 +16,10 @@ interface FilterBarProps {
 }
 
 const CATEGORY_OPTIONS = [
-  { value: 'equipment', label: 'equipment' },
-  { value: 'materials', label: 'materials' },
-  { value: 'consumables', label: 'consumables' },
-  { value: 'other', label: 'other' },
+  { value: 'equipment', label: t.categories.equipment },
+  { value: 'materials', label: t.categories.materials },
+  { value: 'consumables', label: t.categories.consumables },
+  { value: 'other', label: t.categories.other },
 ];
 
 export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = [] }: FilterBarProps) {
@@ -41,7 +42,7 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
     <div className="flex flex-wrap gap-3 items-end">
       {variant === 'income' && (
         <div>
-          <Label htmlFor="service_type_id">Service Type</Label>
+          <Label htmlFor="service_type_id">{t.entries.serviceType}</Label>
           <Select
             id="service_type_id"
             options={serviceTypeOptions}
@@ -49,24 +50,24 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
             onValueChange={(v) =>
               onChange({ ...filters, service_type_id: v ? Number(v) : undefined })
             }
-            placeholder="All types"
+            placeholder={t.entries.allTypes}
           />
         </div>
       )}
       {variant === 'expense' && (
         <div>
-          <Label htmlFor="category">Category</Label>
+          <Label htmlFor="category">{t.entries.category}</Label>
           <Select
             id="category"
             options={CATEGORY_OPTIONS}
             value={filters.category ?? ''}
             onValueChange={(v) => onChange({ ...filters, category: v || undefined })}
-            placeholder="All categories"
+            placeholder={t.entries.allCategories}
           />
         </div>
       )}
       <div>
-        <Label htmlFor="date_from">From</Label>
+        <Label htmlFor="date_from">{t.entries.from}</Label>
         <input
           id="date_from"
           type="date"
@@ -76,7 +77,7 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
         />
       </div>
       <div>
-        <Label htmlFor="date_to">To</Label>
+        <Label htmlFor="date_to">{t.entries.to}</Label>
         <input
           id="date_to"
           type="date"
@@ -87,11 +88,11 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
       </div>
       {isActive && (
         <Button variant="ghost" onClick={handleClear} className="h-[36px]">
-          Clear Filters
+          {t.entries.clearFilters}
         </Button>
       )}
       <div aria-live="polite" className="sr-only">
-        {cleared ? 'Filters cleared' : ''}
+        {cleared ? t.entries.filtersCleared : ''}
       </div>
     </div>
   );
