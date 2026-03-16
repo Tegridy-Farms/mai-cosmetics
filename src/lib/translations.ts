@@ -8,7 +8,7 @@ export const t = {
     income: 'הכנסות',
     expenses: 'הוצאות',
     export: 'ייצוא',
-    maiCosmetics: 'מי קוסמטיקס',
+    maiCosmetics: 'מאי קוסמטיקס',
   },
   dashboard: {
     thisMonth: 'החודש',
