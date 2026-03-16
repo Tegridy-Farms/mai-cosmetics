@@ -14,6 +14,7 @@ function createFormSchema() {
   return z.object({
     service_name: z.string().min(1, t.forms.serviceNameRequired),
     service_type_id: z.string().min(1, t.forms.serviceTypeRequired),
+    customer_id: z.string().optional(),
     date: z.string().min(1, t.forms.dateRequired),
     duration_minutes: z.number()
       .positive(t.forms.durationRequired)
@@ -29,15 +30,24 @@ type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
 interface ServiceType {
   id: number;
   name: string;
+  default_price?: number | null;
+}
+
+interface Customer {
+  id: number;
+  first_name: string;
+  last_name: string;
 }
 
 interface IncomeFormProps {
   serviceTypes: ServiceType[];
+  customers?: Customer[];
 }
 
-export function IncomeForm({ serviceTypes }: IncomeFormProps) {
+export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
   const [serviceName, setServiceName] = useState('');
   const [serviceTypeId, setServiceTypeId] = useState('');
+  const [customerId, setCustomerId] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [durationMinutes, setDurationMinutes] = useState('');
   const [amount, setAmount] = useState('');
@@ -50,12 +60,28 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
     label: st.name,
   }));
 
+  const customerOptions = customers.map((c) => ({
+    value: String(c.id),
+    label: `${c.first_name} ${c.last_name}`,
+  }));
+
+  const handleServiceTypeChange = (value: string) => {
+    setServiceTypeId(value);
+    if (value) {
+      const st = serviceTypes.find((s) => String(s.id) === value);
+      if (st?.default_price != null && st.default_price > 0) {
+        setAmount(String(st.default_price));
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const rawData = {
       service_name: serviceName,
       service_type_id: serviceTypeId,
+      customer_id: customerId || undefined,
       date,
       duration_minutes: Number(durationMinutes),
       amount: Number(amount),
@@ -85,6 +111,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
         body: JSON.stringify({
           service_name: result.data.service_name,
           service_type_id: Number(result.data.service_type_id),
+          customer_id: result.data.customer_id ? Number(result.data.customer_id) : null,
           date: result.data.date,
           duration_minutes: result.data.duration_minutes,
           amount: result.data.amount,
@@ -99,6 +126,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
       showToast(t.toast.incomeLogged, 'success');
       setServiceName('');
       setServiceTypeId('');
+      setCustomerId('');
       setDate(new Date().toISOString().split('T')[0]);
       setDurationMinutes('');
       setAmount('');
@@ -145,7 +173,7 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               options={serviceTypeOptions}
               placeholder={t.forms.selectServiceType}
               value={serviceTypeId}
-              onValueChange={setServiceTypeId}
+              onValueChange={handleServiceTypeChange}
               error={!!errors.service_type_id}
               aria-invalid={errors.service_type_id ? 'true' : undefined}
               aria-describedby={errors.service_type_id ? 'service_type_id-error' : undefined}
@@ -157,6 +185,24 @@ export function IncomeForm({ serviceTypes }: IncomeFormProps) {
               </p>
             )}
           </div>
+
+          {/* Customer (optional) */}
+          {customerOptions.length > 0 && (
+            <div>
+              <Label htmlFor="customer_id">
+                {t.forms.customer}{' '}
+                <span className="text-text-muted font-normal">({t.forms.selectCustomer})</span>
+              </Label>
+              <Select
+                id="customer_id"
+                options={customerOptions}
+                placeholder={t.forms.selectCustomer}
+                value={customerId}
+                onValueChange={setCustomerId}
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
 
           {/* Date */}
           <div>

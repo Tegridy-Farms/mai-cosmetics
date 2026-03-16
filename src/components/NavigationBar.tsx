@@ -9,6 +9,8 @@ const navItems = [
   { label: t.nav.dashboard, href: "/" },
   { label: t.nav.income, href: "/income" },
   { label: t.nav.expenses, href: "/expenses" },
+  { label: t.nav.customers, href: "/customers" },
+  { label: t.nav.serviceTypes, href: "/service-types" },
 ];
 
 export function NavigationBar() {
@@ -35,7 +37,9 @@ export function NavigationBar() {
         </div>
         <ul className="flex flex-col mt-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href ||
+              (item.href === '/customers' && pathname.startsWith('/customers'));
             return (
               <li key={item.href}>
                 <Link
@@ -55,26 +59,47 @@ export function NavigationBar() {
         </ul>
       </nav>
 
-      {/* Mobile: bottom tab bar - explicit left/right for reliable full-width in RTL */}
+      {/* Mobile: iOS-style bottom tab bar */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 w-full flex flex-row items-center min-h-[56px] pb-[env(safe-area-inset-bottom)] bg-white border-t border-border z-50"
+        className="lg:hidden fixed bottom-0 left-0 right-0 w-full z-50 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         aria-label="ניווט ראשי"
       >
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[44px] text-[11px] font-medium transition-colors touch-manipulation ${
-                isActive ? "text-primary" : "text-text-muted"
-              }`}
-            >
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+        <div
+          className="flex flex-row items-center justify-around min-h-[60px] rounded-t-2xl bg-white/85 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border border-b-0 border-border/50"
+          style={{ WebkitBackdropFilter: 'saturate(180%) blur(20px)' }}
+        >
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href === '/customers' && pathname.startsWith('/customers'));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`relative flex-1 flex flex-col items-center justify-center gap-1 min-h-[52px] min-w-[56px] py-2 transition-all duration-200 touch-manipulation active:scale-95 ${
+                  isActive
+                    ? "text-primary"
+                    : "text-text-muted/80 hover:text-text-muted"
+                }`}
+              >
+                <span
+                  className={`text-[11px] font-medium ${
+                    isActive ? "font-semibold" : "font-medium"
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {isActive && (
+                  <span
+                    className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
+                    aria-hidden
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </>
   );
