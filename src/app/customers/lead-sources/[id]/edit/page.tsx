@@ -1,29 +1,40 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { LeadSourceForm } from '@/components/forms/LeadSourceForm';
 import { t } from '@/lib/translations';
 import type { LeadSource } from '@/types';
 
-async function getLeadSource(id: number): Promise<LeadSource | null> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/lead-sources/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
+export default function EditLeadSourcePage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = parseInt(params.id as string, 10);
+  const [leadSource, setLeadSource] = useState<LeadSource | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (isNaN(id)) return;
+    fetch(`/api/lead-sources/${id}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          if (res.status === 404) router.push('/customers/lead-sources');
+          return;
+        }
+        const data = await res.json();
+        setLeadSource(data);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [id, router]);
+
+  if (isNaN(id) || isLoading || !leadSource) {
+    return (
+      <div className="max-w-[560px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8">
+        <div className="h-8 w-48 bg-skeleton rounded animate-pulse" />
+      </div>
+    );
   }
-}
-
-export default async function EditLeadSourcePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const id = parseInt(params.id, 10);
-  if (isNaN(id)) notFound();
-
-  const leadSource = await getLeadSource(id);
-  if (!leadSource) notFound();
 
   return (
     <>

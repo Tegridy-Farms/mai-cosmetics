@@ -23,12 +23,13 @@ export function DeleteConfirmDialog({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+        <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/50" />
         <Dialog.Content
           role="alertdialog"
           aria-labelledby="delete-dialog-title"
           aria-describedby="delete-dialog-description"
-          className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface w-[min(calc(100vw-2rem),400px)] p-6 rounded-xl shadow-lg max-h-[85vh] overflow-y-auto"
+          className="fixed z-[101] w-[min(calc(100vw-2rem),400px)] max-h-[85vh] overflow-y-auto rounded-xl bg-surface p-6 shadow-lg"
+          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
         >
           <Dialog.Title id="delete-dialog-title" className="text-[18px] font-semibold text-text-primary">
             {t.entries.deleteTitle}
