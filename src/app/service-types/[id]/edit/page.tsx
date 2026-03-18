@@ -7,9 +7,9 @@ import { t } from '@/lib/translations';
 import type { ServiceType } from '@/types';
 
 export default function EditServiceTypePage() {
-  const params = useParams();
+  const params = useParams() ?? {};
   const router = useRouter();
-  const id = parseInt(params.id as string, 10);
+  const id = parseInt((params as any).id as string, 10);
   const [serviceType, setServiceType] = useState<ServiceType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -16,8 +16,10 @@ function isAllowedPath(pathname: string): boolean {
   if (pathname === "/favicon.ico") return true;
   if (pathname === "/site.webmanifest") return true;
   if (pathname === "/login") return true;
+  if (pathname.startsWith("/f/")) return true;
   if (pathname === "/api/admin/login") return true;
   if (pathname === "/api/admin/logout") return true;
+  if (pathname.startsWith("/api/public/")) return true;
   return false;
 }
 

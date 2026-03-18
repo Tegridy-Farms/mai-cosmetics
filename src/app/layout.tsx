@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Heebo, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { NavigationBar } from '@/components/NavigationBar';
 import { t } from '@/lib/translations';
+import { AppShell } from './AppShell';
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
@@ -31,12 +31,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-background text-text-primary">
-        <div className="flex min-h-screen">
-          <NavigationBar />
-          <main className="flex-1 overflow-auto pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
-            {children}
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

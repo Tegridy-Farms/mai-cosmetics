@@ -1,0 +1,84 @@
+import { sql } from '@/lib/db';
+import { CampaignSchema } from '@/lib/schemas';
+
+export const dynamic = 'force-dynamic';
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export async function GET(_: Request, { params }: { params: { id: string } }): Promise<Response> {
+  try {
+    const id = Number(params.id);
+    if (!Number.isFinite(id)) return jsonResponse({ error: 'Invalid id' }, 400);
+
+    const result = await sql`
+      SELECT id, name, slug, channel_focus, start_date, end_date, budget, notes, created_at
+      FROM campaigns
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    const row = result.rows[0];
+    if (!row) return jsonResponse({ error: 'Not found' }, 404);
+    return jsonResponse(row);
+  } catch {
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+}
+
+export async function PUT(request: Request, { params }: { params: { id: string } }): Promise<Response> {
+  try {
+    const id = Number(params.id);
+    if (!Number.isFinite(id)) return jsonResponse({ error: 'Invalid id' }, 400);
+
+    const body = await request.json();
+    const parsed = CampaignSchema.safeParse(body);
+    if (!parsed.success) {
+      return jsonResponse({ error: 'Validation failed', details: parsed.error.issues }, 400);
+    }
+
+    const { name, slug, channel_focus, start_date, end_date, budget, notes } = parsed.data;
+
+    const result = await sql`
+      UPDATE campaigns
+      SET
+        name = ${name},
+        slug = ${slug},
+        channel_focus = ${channel_focus},
+        start_date = ${start_date ?? null},
+        end_date = ${end_date ?? null},
+        budget = ${budget ?? null},
+        notes = ${notes ?? null}
+      WHERE id = ${id}
+      RETURNING id, name, slug, channel_focus, start_date, end_date, budget, notes, created_at
+    `;
+
+    const row = result.rows[0];
+    if (!row) return jsonResponse({ error: 'Not found' }, 404);
+    return jsonResponse(row);
+  } catch {
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+}
+
+export async function DELETE(_: Request, { params }: { params: { id: string } }): Promise<Response> {
+  try {
+    const id = Number(params.id);
+    if (!Number.isFinite(id)) return jsonResponse({ error: 'Invalid id' }, 400);
+
+    const result = await sql`
+      DELETE FROM campaigns
+      WHERE id = ${id}
+      RETURNING id
+    `;
+    const row = result.rows[0];
+    if (!row) return jsonResponse({ error: 'Not found' }, 404);
+    return jsonResponse({ ok: true });
+  } catch {
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+}
+

@@ -13,6 +13,61 @@ export interface LeadSource {
   created_at?: string;
 }
 
+export type SourceChannel = 'instagram' | 'facebook' | 'referral' | 'other';
+export type CampaignChannelFocus = 'instagram' | 'facebook' | 'referral' | 'mixed' | 'other';
+export type FormStatus = 'draft' | 'published' | 'archived';
+export type LeadStage = 'new' | 'qualified' | 'contacted' | 'scheduled' | 'converted' | 'lost';
+export type LeadEventType = 'stage_change' | 'note' | 'contact_attempt' | 'conversion';
+
+export interface Campaign {
+  id: number;
+  name: string;
+  slug: string;
+  channel_focus: CampaignChannelFocus;
+  start_date?: string | null;
+  end_date?: string | null;
+  budget?: number | null;
+  notes?: string | null;
+  created_at?: string;
+}
+
+export interface Form {
+  id: number;
+  campaign_id?: number | null;
+  name: string;
+  slug: string;
+  status: FormStatus;
+  ui_schema: Record<string, unknown>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Lead {
+  id: number;
+  form_id?: number | null;
+  campaign_id?: number | null;
+  source_channel: SourceChannel;
+  full_name: string;
+  phone?: string | null;
+  email?: string | null;
+  consent_marketing: boolean;
+  stage: LeadStage;
+  lost_reason?: string | null;
+  converted_customer_id?: number | null;
+  attribution: Record<string, unknown>;
+  submitted_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LeadEvent {
+  id: number;
+  lead_id: number;
+  type: LeadEventType;
+  payload: Record<string, unknown>;
+  created_at?: string;
+}
+
 export interface Customer {
   id: number;
   first_name: string;

@@ -31,11 +31,15 @@ export function Select({
   'aria-describedby': ariaDescribedby,
   disabled = false,
 }: SelectProps) {
+  // Radix Select items cannot have an empty-string value. We treat empty-string options as "no selection"
+  // and rely on the trigger placeholder instead.
+  const safeOptions = options.filter((o) => o.value !== '');
+
   // Only pass value if it exists in options (Radix misbehaves when value doesn't match any item)
   const normalizedValue =
     !value || value === ''
       ? undefined
-      : options.some((o) => o.value === value)
+      : safeOptions.some((o) => o.value === value)
         ? value
         : undefined;
   return (
@@ -70,7 +74,7 @@ export function Select({
             </svg>
           </RadixSelect.ScrollUpButton>
           <RadixSelect.Viewport className="p-1">
-            {options.map((option) => (
+            {safeOptions.map((option) => (
               <RadixSelect.Item
                 key={option.value}
                 value={option.value}

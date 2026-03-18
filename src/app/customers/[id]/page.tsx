@@ -28,9 +28,9 @@ interface CustomerStats {
 }
 
 export default function CustomerDetailPage() {
-  const params = useParams();
+  const params = useParams() ?? {};
   const router = useRouter();
-  const id = parseInt(params.id as string, 10);
+  const id = parseInt((params as any).id as string, 10);
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [stats, setStats] = useState<CustomerStats | null>(null);
   const [incomeEntries, setIncomeEntries] = useState<IncomeEntry[]>([]);

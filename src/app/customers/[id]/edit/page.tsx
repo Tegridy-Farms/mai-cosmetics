@@ -7,9 +7,9 @@ import { t } from '@/lib/translations';
 import type { Customer, LeadSource } from '@/types';
 
 export default function EditCustomerPage() {
-  const params = useParams();
+  const params = useParams() ?? {};
   const router = useRouter();
-  const id = parseInt(params.id as string, 10);
+  const id = parseInt((params as any).id as string, 10);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [leadSources, setLeadSources] = useState<LeadSource[]>([]);
   const [isLoading, setIsLoading] = useState(true);

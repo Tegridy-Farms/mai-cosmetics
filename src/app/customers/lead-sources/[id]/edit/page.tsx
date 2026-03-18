@@ -7,9 +7,9 @@ import { t } from '@/lib/translations';
 import type { LeadSource } from '@/types';
 
 export default function EditLeadSourcePage() {
-  const params = useParams();
+  const params = useParams() ?? {};
   const router = useRouter();
-  const id = parseInt(params.id as string, 10);
+  const id = parseInt((params as any).id as string, 10);
   const [leadSource, setLeadSource] = useState<LeadSource | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
