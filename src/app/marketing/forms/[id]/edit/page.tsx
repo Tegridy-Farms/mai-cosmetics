@@ -8,7 +8,7 @@ import { AdminFormForm } from '@/components/forms/AdminFormForm';
 import { t } from '@/lib/translations';
 import type { Campaign, Form } from '@/types';
 
-export default function EditFormPage() {
+export default function EditMarketingFormPage() {
   const params = useParams() ?? {};
   const router = useRouter();
   const id = parseInt((params as any).id as string, 10);
@@ -25,7 +25,7 @@ export default function EditFormPage() {
         setForm(await formRes.json());
         setCampaigns(await campRes.json());
       })
-      .catch(() => router.push('/forms'))
+      .catch(() => router.push('/marketing/forms'))
       .finally(() => setIsLoading(false));
   }, [id, router]);
 
@@ -41,7 +41,6 @@ export default function EditFormPage() {
       await navigator.clipboard.writeText(url);
       showToast(t.adminForms.copied, 'success');
     } catch {
-      // fallback
       showToast(t.toast.couldNotSave, 'error');
     }
   }
@@ -55,7 +54,7 @@ export default function EditFormPage() {
       });
       if (!res.ok) throw new Error('failed');
       showToast(t.toast.saved, 'success');
-      router.push('/forms');
+      router.push('/marketing/forms');
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     }
@@ -63,7 +62,7 @@ export default function EditFormPage() {
 
   if (isNaN(id) || isLoading) {
     return (
-      <div className="max-w-[900px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="max-w-[900px] mx-auto w-full">
         <div className="h-8 w-48 bg-skeleton rounded animate-pulse" />
       </div>
     );
@@ -72,9 +71,9 @@ export default function EditFormPage() {
   if (!form) return null;
 
   return (
-    <div className="max-w-[900px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="max-w-[900px] mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">{t.adminForms.editForm}</h1>
+        <h2 className="text-xl sm:text-2xl font-bold text-text-primary">{t.adminForms.editForm}</h2>
         <div className="flex items-center gap-2">
           <Button variant="ghost" type="button" onClick={copyLink}>
             {t.adminForms.copyLink}
@@ -90,11 +89,9 @@ export default function EditFormPage() {
         </div>
       </div>
 
-      {publicUrl ? (
-        <div className="mb-4 text-xs text-text-secondary font-mono break-all">{publicUrl}</div>
-      ) : null}
+      {publicUrl ? <div className="mb-4 text-xs text-text-secondary font-mono break-all">{publicUrl}</div> : null}
 
-      <AdminFormForm initial={form} campaigns={campaigns} onSave={onSave} onCancelHref="/forms" />
+      <AdminFormForm initial={form} campaigns={campaigns} onSave={onSave} onCancelHref="/marketing/forms" />
       <ToastContainer toasts={toasts} />
     </div>
   );

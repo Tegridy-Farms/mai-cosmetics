@@ -62,7 +62,7 @@ export function CampaignsTable({ campaigns, isLoading, onDelete }: CampaignsTabl
                   title={t.campaigns.noCampaigns}
                   description={t.campaigns.tryAdding}
                   ctaLabel={t.campaigns.addCampaign}
-                  ctaHref="/campaigns/new"
+                  ctaHref="/marketing/campaigns/new"
                 />
               </td>
             </tr>
@@ -80,7 +80,7 @@ export function CampaignsTable({ campaigns, isLoading, onDelete }: CampaignsTabl
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">
                     <Link
-                      href={`/campaigns/${c.id}/edit`}
+                      href={`/marketing/campaigns/${c.id}/edit`}
                       className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-primary transition-colors touch-manipulation"
                       aria-label={`ערוך ${c.name}`}
                     >

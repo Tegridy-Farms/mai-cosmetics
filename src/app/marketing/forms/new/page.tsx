@@ -7,7 +7,7 @@ import { AdminFormForm } from '@/components/forms/AdminFormForm';
 import { t } from '@/lib/translations';
 import type { Campaign } from '@/types';
 
-export default function NewFormPage() {
+export default function NewMarketingFormPage() {
   const router = useRouter();
   const { showToast, toasts } = useToast();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -28,16 +28,16 @@ export default function NewFormPage() {
       });
       if (!res.ok) throw new Error('failed');
       showToast(t.toast.saved, 'success');
-      router.push('/forms');
+      router.push('/marketing/forms');
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     }
   }
 
   return (
-    <div className="max-w-[900px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary mb-6">{t.adminForms.addForm}</h1>
-      <AdminFormForm campaigns={campaigns} onSave={onSave} onCancelHref="/forms" />
+    <div className="max-w-[900px] mx-auto w-full">
+      <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-6">{t.adminForms.addForm}</h2>
+      <AdminFormForm campaigns={campaigns} onSave={onSave} onCancelHref="/marketing/forms" />
       <ToastContainer toasts={toasts} />
     </div>
   );

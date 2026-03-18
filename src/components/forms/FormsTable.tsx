@@ -60,7 +60,7 @@ export function FormsTable({ forms, isLoading, onDelete }: FormsTableProps) {
                   title={t.adminForms.noForms}
                   description={t.adminForms.tryAdding}
                   ctaLabel={t.adminForms.addForm}
-                  ctaHref="/forms/new"
+                  ctaHref="/marketing/forms/new"
                 />
               </td>
             </tr>
@@ -74,7 +74,7 @@ export function FormsTable({ forms, isLoading, onDelete }: FormsTableProps) {
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">
                     <Link
-                      href={`/forms/${f.id}/edit`}
+                      href={`/marketing/forms/${f.id}/edit`}
                       className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-primary transition-colors touch-manipulation"
                       aria-label={`ערוך ${f.name}`}
                     >

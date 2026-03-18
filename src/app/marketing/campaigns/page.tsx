@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { DeleteConfirmDialog } from '@/components/entries/DeleteConfirmDialog';
-import { FormsTable } from '@/components/forms/FormsTable';
+import { CampaignsTable } from '@/components/campaigns/CampaignsTable';
 import { t } from '@/lib/translations';
-import type { Campaign, Form } from '@/types';
+import type { Campaign } from '@/types';
 
-export default function FormsPage() {
-  const [forms, setForms] = useState<Form[]>([]);
+export default function MarketingCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -18,12 +17,12 @@ export default function FormsPage() {
   const [deleteDescription, setDeleteDescription] = useState('');
   const { showToast, toasts } = useToast();
 
-  const fetchAll = useCallback(async () => {
+  const fetchCampaigns = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [formsRes, campaignsRes] = await Promise.all([fetch('/api/forms'), fetch('/api/campaigns')]);
-      setForms(await formsRes.json());
-      setCampaigns(await campaignsRes.json());
+      const res = await fetch('/api/campaigns');
+      const data = await res.json();
+      setCampaigns(data);
     } catch {
       showToast(t.toast.couldNotLoad, 'error');
     } finally {
@@ -32,22 +31,12 @@ export default function FormsPage() {
   }, [showToast]);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
-  const campaignsById = useMemo(() => new Map(campaigns.map((c) => [c.id, c.name] as const)), [campaigns]);
-  const formsWithCampaign = useMemo(
-    () =>
-      forms.map((f) => ({
-        ...f,
-        campaign_name: f.campaign_id ? campaignsById.get(f.campaign_id) ?? null : null,
-      })),
-    [forms, campaignsById]
-  );
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const handleDeleteClick = (id: number) => {
-    const f = forms.find((x) => x.id === id);
-    if (f) setDeleteDescription(f.name);
+    const c = campaigns.find((x) => x.id === id);
+    if (c) setDeleteDescription(c.name);
     setDeleteId(id);
   };
 
@@ -55,9 +44,9 @@ export default function FormsPage() {
     if (deleteId === null) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/forms/${deleteId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/campaigns/${deleteId}`, { method: 'DELETE' });
       if (res.ok) {
-        await fetchAll();
+        await fetchCampaigns();
       } else {
         showToast(t.toast.couldNotDelete, 'error');
       }
@@ -77,14 +66,14 @@ export default function FormsPage() {
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">{t.adminForms.title}</h1>
-        <Link href="/forms/new">
-          <Button variant="primary">+ {t.adminForms.addForm}</Button>
+        <h2 className="text-xl sm:text-2xl font-bold text-text-primary">{t.campaigns.title}</h2>
+        <Link href="/marketing/campaigns/new">
+          <Button variant="primary">+ {t.campaigns.addCampaign}</Button>
         </Link>
       </div>
 
       <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
-        <FormsTable forms={formsWithCampaign} campaigns={campaigns} isLoading={isLoading} onDelete={handleDeleteClick} />
+        <CampaignsTable campaigns={campaigns} isLoading={isLoading} onDelete={handleDeleteClick} />
       </div>
 
       <DeleteConfirmDialog

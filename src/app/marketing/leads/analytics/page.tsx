@@ -31,7 +31,7 @@ function metric(value: number | null | undefined, suffix = ''): string {
   return `${value}${suffix}`;
 }
 
-export default function LeadsAnalyticsPage() {
+export default function MarketingLeadsAnalyticsPage() {
   const [days, setDays] = useState(30);
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,11 +48,11 @@ export default function LeadsAnalyticsPage() {
   const perDayMax = useMemo(() => Math.max(...(report?.perDay ?? []).map((d) => d.total), 1), [report?.perDay]);
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">
+        <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
           {t.leads.analytics} ({days} ימים)
-        </h1>
+        </h2>
         <div className="flex gap-2">
           <Button variant={days === 7 ? 'primary' : 'ghost'} onClick={() => setDays(7)}>
             7
@@ -63,7 +63,7 @@ export default function LeadsAnalyticsPage() {
           <Button variant={days === 90 ? 'primary' : 'ghost'} onClick={() => setDays(90)}>
             90
           </Button>
-          <Link href="/leads">
+          <Link href="/marketing/leads">
             <Button variant="ghost">↩️ {t.leads.title}</Button>
           </Link>
         </div>
@@ -157,7 +157,9 @@ export default function LeadsAnalyticsPage() {
                       <td className="py-2 px-4">{r.campaign_name || '—'}</td>
                       <td className="py-2 px-4 text-end font-mono">{r.total}</td>
                       <td className="py-2 px-4 text-end font-mono">{metric(r.conversion_rate_pct, '%')}</td>
-                      <td className="py-2 px-4 text-end font-mono">{r.revenue_ils !== null && r.revenue_ils !== undefined ? String(r.revenue_ils) : '—'}</td>
+                      <td className="py-2 px-4 text-end font-mono">
+                        {r.revenue_ils !== null && r.revenue_ils !== undefined ? String(r.revenue_ils) : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -10,8 +10,6 @@ import {
   Users,
   Sparkles,
   Megaphone,
-  FileText,
-  UserPlus,
   type LucideIcon,
 } from "lucide-react";
 import { t } from "@/lib/translations";
@@ -21,9 +19,7 @@ const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: t.nav.income, href: "/income", icon: Banknote },
   { label: t.nav.expenses, href: "/expenses", icon: Receipt },
   { label: t.nav.customers, href: "/customers", icon: Users },
-  { label: t.nav.leads, href: "/leads", icon: UserPlus },
-  { label: t.nav.campaigns, href: "/campaigns", icon: Megaphone },
-  { label: t.nav.forms, href: "/forms", icon: FileText },
+  { label: t.nav.marketing, href: "/marketing", icon: Megaphone },
   { label: t.nav.serviceTypes, href: "/service-types", icon: Sparkles },
 ];
 
@@ -58,9 +54,7 @@ export function NavigationBar() {
               (item.href === '/income' && pathname.startsWith('/income')) ||
               (item.href === '/expenses' && pathname.startsWith('/expenses')) ||
               (item.href === '/customers' && pathname.startsWith('/customers')) ||
-              (item.href === '/leads' && pathname.startsWith('/leads')) ||
-              (item.href === '/campaigns' && pathname.startsWith('/campaigns')) ||
-              (item.href === '/forms' && pathname.startsWith('/forms')) ||
+              (item.href === '/marketing' && pathname.startsWith('/marketing')) ||
               (item.href === '/service-types' && pathname.startsWith('/service-types'));
             return (
               <li key={item.href}>
@@ -96,9 +90,7 @@ export function NavigationBar() {
               (item.href === '/income' && pathname.startsWith('/income')) ||
               (item.href === '/expenses' && pathname.startsWith('/expenses')) ||
               (item.href === '/customers' && pathname.startsWith('/customers')) ||
-              (item.href === '/leads' && pathname.startsWith('/leads')) ||
-              (item.href === '/campaigns' && pathname.startsWith('/campaigns')) ||
-              (item.href === '/forms' && pathname.startsWith('/forms')) ||
+              (item.href === '/marketing' && pathname.startsWith('/marketing')) ||
               (item.href === '/service-types' && pathname.startsWith('/service-types'));
             return (
               <Link

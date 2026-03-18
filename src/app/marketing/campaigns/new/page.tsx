@@ -6,7 +6,7 @@ import { useToast, ToastContainer } from '@/components/ui/toast';
 import { CampaignForm } from '@/components/forms/CampaignForm';
 import { t } from '@/lib/translations';
 
-export default function NewCampaignPage() {
+export default function NewMarketingCampaignPage() {
   const router = useRouter();
   const { showToast, toasts } = useToast();
 
@@ -19,16 +19,16 @@ export default function NewCampaignPage() {
       });
       if (!res.ok) throw new Error('failed');
       showToast(t.campaigns.saved, 'success');
-      router.push('/campaigns');
+      router.push('/marketing/campaigns');
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     }
   }
 
   return (
-    <div className="max-w-[900px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary mb-6">{t.campaigns.addCampaign}</h1>
-      <CampaignForm onSave={onSave} onCancelHref="/campaigns" />
+    <div className="max-w-[900px] mx-auto w-full">
+      <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-6">{t.campaigns.addCampaign}</h2>
+      <CampaignForm onSave={onSave} onCancelHref="/marketing/campaigns" />
       <ToastContainer toasts={toasts} />
     </div>
   );

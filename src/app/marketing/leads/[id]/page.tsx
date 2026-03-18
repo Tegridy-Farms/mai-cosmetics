@@ -34,7 +34,7 @@ const stageOptions: { value: LeadStage; label: string }[] = [
   { value: 'lost', label: t.leads.lost },
 ];
 
-export default function LeadDetailPage() {
+export default function MarketingLeadDetailPage() {
   const params = useParams() ?? {};
   const router = useRouter();
   const id = parseInt((params as any).id as string, 10);
@@ -55,7 +55,7 @@ export default function LeadDetailPage() {
     Promise.all([fetch(`/api/leads/${id}`), fetch(`/api/leads/${id}/events`)])
       .then(async ([l, e]) => {
         if (!l.ok) {
-          if (l.status === 404) router.push('/leads');
+          if (l.status === 404) router.push('/marketing/leads');
           throw new Error('not ok');
         }
         const leadJson = (await l.json()) as LeadDetail;
@@ -143,7 +143,7 @@ export default function LeadDetailPage() {
 
   if (isNaN(id) || isLoading) {
     return (
-      <div className="max-w-[1200px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="max-w-[1200px] mx-auto w-full">
         <div className="h-8 w-48 bg-skeleton rounded animate-pulse" />
       </div>
     );
@@ -152,9 +152,9 @@ export default function LeadDetailPage() {
   if (!lead) return null;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="max-w-[1200px] mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">{lead.full_name}</h1>
+        <h2 className="text-xl sm:text-2xl font-bold text-text-primary">{lead.full_name}</h2>
         <div className="flex items-center gap-2">
           {lead.converted_customer_id ? (
             <Link href={`/customers/${lead.converted_customer_id}`}>
@@ -224,7 +224,9 @@ export default function LeadDetailPage() {
                       {ev.created_at ? new Date(ev.created_at).toLocaleString('he-IL') : ''}
                     </div>
                   </div>
-                  <pre className="mt-2 text-xs bg-background rounded-lg p-3 overflow-auto">{JSON.stringify(ev.payload ?? {}, null, 2)}</pre>
+                  <pre className="mt-2 text-xs bg-background rounded-lg p-3 overflow-auto">
+                    {JSON.stringify(ev.payload ?? {}, null, 2)}
+                  </pre>
                 </div>
               ))
             )}
@@ -251,7 +253,7 @@ export default function LeadDetailPage() {
         </div>
       </div>
 
-      <Link href="/leads" className="block mt-6 text-center text-primary underline hover:text-primary-dark text-sm">
+      <Link href="/marketing/leads" className="block mt-6 text-center text-primary underline hover:text-primary-dark text-sm">
         ↩️ {t.leads.title}
       </Link>
 

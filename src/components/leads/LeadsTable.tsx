@@ -73,14 +73,19 @@ export function LeadsTable({ leads, isLoading }: LeadsTableProps) {
           ) : leads.length === 0 ? (
             <tr>
               <td colSpan={7}>
-                <EmptyState title={t.leads.noLeads} description={t.leads.tryAdding} ctaLabel={t.leads.addLead} ctaHref="/leads/new" />
+                <EmptyState
+                  title={t.leads.noLeads}
+                  description={t.leads.tryAdding}
+                  ctaLabel={t.leads.addLead}
+                  ctaHref="/marketing/leads/new"
+                />
               </td>
             </tr>
           ) : (
             leads.map((l) => (
               <tr key={l.id} className="border-b border-border hover:bg-background">
                 <td className="py-3 px-4 text-text-primary">
-                  <Link href={`/leads/${l.id}`} className="text-primary underline hover:text-primary-dark">
+                  <Link href={`/marketing/leads/${l.id}`} className="text-primary underline hover:text-primary-dark">
                     {l.full_name}
                   </Link>
                 </td>

@@ -7,7 +7,7 @@ import { LeadManualForm } from '@/components/forms/LeadManualForm';
 import { t } from '@/lib/translations';
 import type { Campaign, Form } from '@/types';
 
-export default function NewLeadPage() {
+export default function NewMarketingLeadPage() {
   const router = useRouter();
   const { showToast, toasts } = useToast();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -33,16 +33,16 @@ export default function NewLeadPage() {
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error('failed');
-      router.push('/leads');
+      router.push('/marketing/leads');
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     }
   }
 
   return (
-    <div className="max-w-[900px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary mb-6">{t.leads.addLead}</h1>
-      <LeadManualForm campaigns={campaigns} forms={forms} onSave={onSave} onCancelHref="/leads" />
+    <div className="max-w-[900px] mx-auto w-full">
+      <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-6">{t.leads.addLead}</h2>
+      <LeadManualForm campaigns={campaigns} forms={forms} onSave={onSave} onCancelHref="/marketing/leads" />
       <ToastContainer toasts={toasts} />
     </div>
   );
