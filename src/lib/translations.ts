@@ -30,6 +30,7 @@ export const t = {
   },
   common: {
     saving: 'שומרת…',
+    loading: 'טוענת...',
   },
   forms: {
     serviceName: 'שם השירות',
@@ -63,6 +64,10 @@ export const t = {
     save: 'שמירה',
     backToDashboard: 'חזרה לדאשבורד',
     customerOptional: 'אופציונלי',
+    addNewCustomer: 'הוספת לקוחה חדשה',
+    newCustomerPending: 'לקוחה חדשה (תוגדר בהמשך)',
+    addCustomerForIncome: 'הוספי פרטי הלקוחה החדשה',
+    incomeSavedAddCustomer: 'הכנסה נרשמה. כעת הוסיפי את פרטי הלקוחה.',
   },
   entries: {
     date: 'תאריך',

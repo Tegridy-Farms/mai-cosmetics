@@ -31,9 +31,17 @@ export function Select({
   'aria-describedby': ariaDescribedby,
   disabled = false,
 }: SelectProps) {
+  // Only pass value if it exists in options (Radix misbehaves when value doesn't match any item)
+  const normalizedValue =
+    !value || value === ''
+      ? undefined
+      : options.some((o) => o.value === value)
+        ? value
+        : undefined;
   return (
-    <RadixSelect.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    <RadixSelect.Root value={normalizedValue} onValueChange={onValueChange} disabled={disabled}>
       <RadixSelect.Trigger
+        type="button"
         id={id}
         aria-invalid={ariaInvalid}
         aria-describedby={ariaDescribedby}
@@ -51,7 +59,11 @@ export function Select({
         </RadixSelect.Icon>
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
-        <RadixSelect.Content className="bg-surface border border-border rounded-[10px] shadow-md overflow-hidden z-50">
+        <RadixSelect.Content
+          position="popper"
+          sideOffset={4}
+          className="bg-surface border border-border rounded-[10px] shadow-md overflow-hidden z-[9999]"
+        >
           <RadixSelect.ScrollUpButton className="flex items-center justify-center h-6 text-text-muted">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 15l-6-6-6 6" />

@@ -11,11 +11,14 @@ interface Customer {
   email?: string | null;
 }
 
+export const NEW_CUSTOMER_VALUE = '__new__';
+
 interface CustomerComboboxProps {
   id?: string;
   value?: string;
   selectedLabel?: string;
   onValueChange?: (customerId: string, customer: Customer | null) => void;
+  onAddNew?: () => void;
   disabled?: boolean;
   placeholder?: string;
   'aria-invalid'?: boolean | 'true' | 'false';
@@ -52,6 +55,7 @@ export function CustomerCombobox({
   value,
   selectedLabel,
   onValueChange,
+  onAddNew,
   disabled = false,
   placeholder = t.forms.selectCustomer,
   'aria-invalid': ariaInvalid,
@@ -70,12 +74,18 @@ export function CustomerCombobox({
 
   const [resolvedCustomer, setResolvedCustomer] = useState<Customer | null>(null);
   const selectedCustomer =
-    customers.find((c) => String(c.id) === value) ?? (value && resolvedCustomer ? resolvedCustomer : null);
+    value === NEW_CUSTOMER_VALUE
+      ? null
+      : customers.find((c) => String(c.id) === value) ?? (value && resolvedCustomer ? resolvedCustomer : null);
   const displayText =
-    selectedCustomer ? customerLabel(selectedCustomer) : selectedLabel ?? '';
+    value === NEW_CUSTOMER_VALUE
+      ? t.forms.newCustomerPending
+      : selectedCustomer
+        ? customerLabel(selectedCustomer)
+        : selectedLabel ?? '';
 
   useEffect(() => {
-    if (value && !customers.find((c) => String(c.id) === value)) {
+    if (value && value !== NEW_CUSTOMER_VALUE && !customers.find((c) => String(c.id) === value)) {
       fetch(`/api/customers/${value}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((c) => setResolvedCustomer(c && String(c.id) === value ? c : null))
@@ -136,6 +146,16 @@ export function CustomerCombobox({
     setSearch('');
   };
 
+  const addNewIndex = onAddNew ? 1 + customers.length : -1;
+  const maxHighlightIndex = onAddNew ? 1 + customers.length : customers.length;
+
+  const handleAddNew = () => {
+    onAddNew?.();
+    onValueChange?.(NEW_CUSTOMER_VALUE, null);
+    setIsOpen(false);
+    setSearch('');
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -147,7 +167,7 @@ export function CustomerCombobox({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setHighlightIndex((i) => Math.min(i + 1, customers.length));
+        setHighlightIndex((i) => Math.min(i + 1, maxHighlightIndex));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -157,6 +177,8 @@ export function CustomerCombobox({
         e.preventDefault();
         if (highlightIndex === 0) {
           handleSelect(null);
+        } else if (highlightIndex === addNewIndex) {
+          handleAddNew();
         } else if (customers[highlightIndex - 1]) {
           handleSelect(customers[highlightIndex - 1]);
         }
@@ -243,14 +265,14 @@ export function CustomerCombobox({
           className="absolute top-full left-0 right-0 mt-1 max-h-[240px] overflow-auto bg-surface border border-border rounded-[10px] shadow-md z-50 py-1"
         >
           {isLoading ? (
-            <li className="px-3 py-4 text-center text-text-muted text-sm">{t.common.saving}</li>
-          ) : customers.length === 0 ? (
+            <li className="px-3 py-4 text-center text-text-muted text-sm">{t.common.loading}</li>
+          ) : customers.length === 0 && !onAddNew ? (
             <li className="px-3 py-4 text-center text-text-muted text-sm">{t.customers.searchNoResults}</li>
           ) : (
             <>
               <li
                 role="option"
-                aria-selected={!value}
+                aria-selected={!value || value === ''}
                 className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
                   highlightIndex === 0 ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
                 }`}
@@ -259,20 +281,39 @@ export function CustomerCombobox({
               >
                 — {t.forms.customerOptional}
               </li>
-              {customers.map((c, i) => (
+              {customers.length > 0 && (
+                customers.map((c, i) => (
+                  <li
+                    key={c.id}
+                    role="option"
+                    aria-selected={String(c.id) === value}
+                    className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
+                      (i + 1) === highlightIndex ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
+                    }`}
+                    onClick={() => handleSelect(c)}
+                    onMouseEnter={() => setHighlightIndex(i + 1)}
+                  >
+                    {customerLabel(c)}
+                  </li>
+                ))
+              )}
+              {onAddNew && (
                 <li
-                  key={c.id}
                   role="option"
-                  aria-selected={String(c.id) === value}
-                  className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
-                    (i + 1) === highlightIndex ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
+                  aria-selected={value === NEW_CUSTOMER_VALUE}
+                  className={`border-t border-border px-3 py-2 text-[14px] cursor-pointer outline-none flex items-center gap-2 ${
+                    highlightIndex === addNewIndex ? 'bg-primary-tint text-primary' : 'text-primary hover:bg-primary-tint'
                   }`}
-                  onClick={() => handleSelect(c)}
-                  onMouseEnter={() => setHighlightIndex(i + 1)}
+                  onClick={handleAddNew}
+                  onMouseEnter={() => setHighlightIndex(addNewIndex)}
                 >
-                  {customerLabel(c)}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  {t.forms.addNewCustomer}
                 </li>
-              ))}
+              )}
             </>
           )}
         </ul>

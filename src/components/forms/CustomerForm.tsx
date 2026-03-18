@@ -35,7 +35,8 @@ interface CustomerFormProps {
   initialLeadSourceId?: number | null;
   customerId?: number;
   leadSources: LeadSource[];
-  onSuccess?: () => void;
+  onSuccess?: (customer?: { id: number }) => void;
+  hideBackLink?: boolean;
 }
 
 export function CustomerForm({
@@ -47,6 +48,7 @@ export function CustomerForm({
   customerId,
   leadSources,
   onSuccess,
+  hideBackLink = false,
 }: CustomerFormProps) {
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
@@ -117,7 +119,8 @@ export function CustomerForm({
       showToast(t.customers.saved, 'success');
 
       if (onSuccess) {
-        onSuccess();
+        const data = await response.json();
+        onSuccess(data?.id ? { id: data.id } : undefined);
       } else if (isEdit) {
         window.location.href = '/customers';
       } else {
@@ -235,12 +238,14 @@ export function CustomerForm({
             {t.forms.save}
           </Button>
 
-          <Link
-            href="/customers"
-            className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
-          >
-            {t.customers.backToList}
-          </Link>
+          {!hideBackLink && (
+            <Link
+              href="/customers"
+              className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
+            >
+              {t.customers.backToList}
+            </Link>
+          )}
         </div>
       </form>
 

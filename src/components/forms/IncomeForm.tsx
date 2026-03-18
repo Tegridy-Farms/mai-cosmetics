@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { CustomerCombobox } from '@/components/ui/customer-combobox';
+import { CustomerCombobox, NEW_CUSTOMER_VALUE } from '@/components/ui/customer-combobox';
+import { AddCustomerModal } from '@/components/modals/AddCustomerModal';
 import { Label } from '@/components/ui/label';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { t } from '@/lib/translations';
@@ -71,9 +72,41 @@ export function IncomeForm({
   );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+  const [pendingIncomeId, setPendingIncomeId] = useState<number | null>(null);
+  const [savedIncomeData, setSavedIncomeData] = useState<{
+    service_name: string;
+    service_type_id: number;
+    date: string;
+    duration_minutes: number;
+    amount: number;
+  } | null>(null);
   const { showToast, toasts } = useToast();
 
-  const serviceTypeOptions = serviceTypes.map((st) => ({
+  const [effectiveServiceTypes, setEffectiveServiceTypes] = useState<ServiceType[]>(serviceTypes ?? []);
+  const [isLoadingServiceTypes, setIsLoadingServiceTypes] = useState(
+    !serviceTypes?.length
+  );
+
+  useEffect(() => {
+    const types = serviceTypes ?? [];
+    if (types.length > 0) {
+      setEffectiveServiceTypes(types);
+      setIsLoadingServiceTypes(false);
+    } else {
+      setIsLoadingServiceTypes(true);
+      fetch('/api/service-types')
+        .then((r) => r.json())
+        .then((data) => {
+          const list = Array.isArray(data) ? data : [];
+          setEffectiveServiceTypes(list);
+        })
+        .catch(() => {})
+        .finally(() => setIsLoadingServiceTypes(false));
+    }
+  }, [serviceTypes]);
+
+  const serviceTypeOptions = effectiveServiceTypes.map((st) => ({
     value: String(st.id),
     label: st.name,
   }));
@@ -81,11 +114,43 @@ export function IncomeForm({
   const handleServiceTypeChange = (value: string) => {
     setServiceTypeId(value);
     if (value) {
-      const st = serviceTypes.find((s) => String(s.id) === value);
+      const st = effectiveServiceTypes.find((s) => String(s.id) === value);
       if (st?.default_price != null && st.default_price > 0) {
         setAmount(String(st.default_price));
       }
     }
+  };
+
+  const handleAddCustomerSuccess = async (customer: { id: number }) => {
+    if (pendingIncomeId == null || !savedIncomeData) return;
+    try {
+      const res = await fetch(`/api/income/${pendingIncomeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...savedIncomeData,
+          customer_id: customer.id,
+        }),
+      });
+      if (res.ok) {
+        showToast(t.toast.incomeLogged, 'success');
+        setShowAddCustomerModal(false);
+        setPendingIncomeId(null);
+        setSavedIncomeData(null);
+        window.location.href = '/income';
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
+    } catch {
+      showToast(t.toast.couldNotSave, 'error');
+    }
+  };
+
+  const handleAddCustomerClose = () => {
+    setShowAddCustomerModal(false);
+    setPendingIncomeId(null);
+    setSavedIncomeData(null);
+    window.location.href = '/income';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,7 +159,7 @@ export function IncomeForm({
     const rawData = {
       service_name: serviceName,
       service_type_id: serviceTypeId,
-      customer_id: customerId || undefined,
+      customer_id: customerId === NEW_CUSTOMER_VALUE ? undefined : customerId || undefined,
       date,
       duration_minutes: Number(durationMinutes),
       amount: Number(amount),
@@ -118,6 +183,9 @@ export function IncomeForm({
     setIsSubmitting(true);
 
     try {
+      const apiCustomerId =
+        customerId && customerId !== NEW_CUSTOMER_VALUE ? Number(customerId) : null;
+
       const url = isEdit ? `/api/income/${incomeId}` : '/api/income';
       const method = isEdit ? 'PUT' : 'POST';
       const response = await fetch(url, {
@@ -126,7 +194,7 @@ export function IncomeForm({
         body: JSON.stringify({
           service_name: result.data.service_name,
           service_type_id: Number(result.data.service_type_id),
-          customer_id: result.data.customer_id ? Number(result.data.customer_id) : null,
+          customer_id: apiCustomerId,
           date: result.data.date,
           duration_minutes: result.data.duration_minutes,
           amount: result.data.amount,
@@ -138,17 +206,30 @@ export function IncomeForm({
         return;
       }
 
-      showToast(t.toast.incomeLogged, 'success');
-      if (isEdit) {
-        window.location.href = '/income';
-        return;
+      if (customerId === NEW_CUSTOMER_VALUE && !isEdit) {
+        const created = await response.json();
+        setPendingIncomeId(created.id);
+        setSavedIncomeData({
+          service_name: result.data.service_name,
+          service_type_id: Number(result.data.service_type_id),
+          date: result.data.date,
+          duration_minutes: result.data.duration_minutes,
+          amount: result.data.amount,
+        });
+        setShowAddCustomerModal(true);
+      } else {
+        showToast(t.toast.incomeLogged, 'success');
+        if (isEdit) {
+          window.location.href = '/income';
+          return;
+        }
+        setServiceName('');
+        setServiceTypeId('');
+        setCustomerId('');
+        setDate(new Date().toISOString().split('T')[0]);
+        setDurationMinutes('');
+        setAmount('');
       }
-      setServiceName('');
-      setServiceTypeId('');
-      setCustomerId('');
-      setDate(new Date().toISOString().split('T')[0]);
-      setDurationMinutes('');
-      setAmount('');
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     } finally {
@@ -187,17 +268,29 @@ export function IncomeForm({
           {/* Service Type */}
           <div>
             <Label htmlFor="service_type_id">{t.forms.serviceType}</Label>
-            <Select
-              id="service_type_id"
-              options={serviceTypeOptions}
-              placeholder={t.forms.selectServiceType}
-              value={serviceTypeId}
-              onValueChange={handleServiceTypeChange}
-              error={!!errors.service_type_id}
-              aria-invalid={errors.service_type_id ? 'true' : undefined}
-              aria-describedby={errors.service_type_id ? 'service_type_id-error' : undefined}
-              disabled={isSubmitting}
-            />
+            {serviceTypeOptions.length > 0 ? (
+              <Select
+                key={`service-type-${effectiveServiceTypes.length}`}
+                id="service_type_id"
+                options={serviceTypeOptions}
+                placeholder={t.forms.selectServiceType}
+                value={serviceTypeId}
+                onValueChange={handleServiceTypeChange}
+                error={!!errors.service_type_id}
+                aria-invalid={errors.service_type_id ? 'true' : undefined}
+                aria-describedby={errors.service_type_id ? 'service_type_id-error' : undefined}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <div
+                id="service_type_id"
+                className="h-[44px] px-3 flex items-center border border-border rounded-[10px] bg-background text-text-muted text-sm"
+              >
+                {isLoadingServiceTypes
+                  ? t.common.loading
+                  : t.serviceTypes.noServiceTypes}
+              </div>
+            )}
             {errors.service_type_id && (
               <p id="service_type_id-error" className="text-[12px] text-error mt-1">
                 {errors.service_type_id}
@@ -215,6 +308,7 @@ export function IncomeForm({
               id="customer_id"
               value={customerId}
               onValueChange={(id) => setCustomerId(id)}
+              onAddNew={!isEdit ? () => setCustomerId(NEW_CUSTOMER_VALUE) : undefined}
               disabled={isSubmitting}
             />
           </div>
@@ -293,13 +387,19 @@ export function IncomeForm({
           </Button>
 
           <Link
-            href={isEdit ? '/income' : '/income'}
+            href="/income"
             className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
           >
             {t.pages.backToIncome}
           </Link>
         </div>
       </form>
+
+      <AddCustomerModal
+        isOpen={showAddCustomerModal}
+        onClose={handleAddCustomerClose}
+        onSuccess={handleAddCustomerSuccess}
+      />
 
       <ToastContainer toasts={toasts} />
     </div>
