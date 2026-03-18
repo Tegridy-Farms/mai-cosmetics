@@ -35,13 +35,31 @@ export default function MarketingLeadsAnalyticsPage() {
   const [days, setDays] = useState(30);
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
+    setLoadError(null);
     fetch(`/api/leads/report?days=${days}`)
-      .then((res) => res.json())
-      .then((json) => setReport(json))
-      .catch(() => setReport(null))
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || `HTTP ${res.status}`);
+        }
+        const json = (await res.json()) as unknown;
+        const looksValid =
+          !!json &&
+          typeof json === 'object' &&
+          'summary' in json &&
+          !!(json as any).summary &&
+          typeof (json as any).summary.leads_total === 'number';
+        if (!looksValid) throw new Error('Unexpected response');
+        setReport(json as Report);
+      })
+      .catch(() => {
+        setReport(null);
+        setLoadError(t.toast.couldNotLoad);
+      })
       .finally(() => setLoading(false));
   }, [days]);
 
@@ -69,30 +87,34 @@ export default function MarketingLeadsAnalyticsPage() {
         </div>
       </div>
 
-      {loading || !report ? (
+      {loading ? (
         <div className="h-8 w-48 bg-skeleton rounded animate-pulse" />
+      ) : !report ? (
+        <div className="bg-surface border border-border rounded-xl p-6 text-center text-text-muted">
+          {loadError ?? t.toast.couldNotLoad}
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
             <div className="bg-surface border border-border rounded-xl p-4">
               <div className="text-xs text-text-secondary">Leads</div>
-              <div className="text-2xl font-bold">{report.summary.leads_total}</div>
+              <div className="text-2xl font-bold">{report.summary?.leads_total ?? '—'}</div>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
               <div className="text-xs text-text-secondary">Converted</div>
-              <div className="text-2xl font-bold">{report.summary.leads_converted}</div>
+              <div className="text-2xl font-bold">{report.summary?.leads_converted ?? '—'}</div>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
               <div className="text-xs text-text-secondary">Conversion rate</div>
-              <div className="text-2xl font-bold">{metric(report.summary.conversion_rate_pct, '%')}</div>
+              <div className="text-2xl font-bold">{metric(report.summary?.conversion_rate_pct, '%')}</div>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
               <div className="text-xs text-text-secondary">Avg minutes to first contact</div>
-              <div className="text-2xl font-bold">{metric(report.summary.avg_minutes_to_first_contact)}</div>
+              <div className="text-2xl font-bold">{metric(report.summary?.avg_minutes_to_first_contact)}</div>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
               <div className="text-xs text-text-secondary">Avg minutes to convert</div>
-              <div className="text-2xl font-bold">{metric(report.summary.avg_minutes_to_convert)}</div>
+              <div className="text-2xl font-bold">{metric(report.summary?.avg_minutes_to_convert)}</div>
             </div>
           </div>
 
