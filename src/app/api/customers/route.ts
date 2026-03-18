@@ -21,8 +21,9 @@ export async function GET(request: Request): Promise<Response> {
       return jsonResponse({ error: 'Invalid query parameters', details: parsed.error.issues }, 400);
     }
 
-    const { page, search, lead_source_id, date_from, date_to } = parsed.data;
-    const offset = (page - 1) * 20;
+    const { page, page_size = 20, search, lead_source_id, date_from, date_to } = parsed.data;
+    const limit = Math.min(page_size, 200);
+    const offset = (page - 1) * limit;
     const searchPattern = search ? `%${search.trim()}%` : null;
 
     const [countResult, dataResult] = await Promise.all([
@@ -47,14 +48,14 @@ export async function GET(request: Request): Promise<Response> {
           AND (${date_from ?? null}::date IS NULL OR EXISTS (SELECT 1 FROM income_entries ie WHERE ie.customer_id = c.id AND ie.date >= ${date_from ?? null}))
           AND (${date_to ?? null}::date IS NULL OR EXISTS (SELECT 1 FROM income_entries ie WHERE ie.customer_id = c.id AND ie.date <= ${date_to ?? null}))
         ORDER BY c.last_name ASC, c.first_name ASC
-        LIMIT 20 OFFSET ${offset}
+        LIMIT ${limit} OFFSET ${offset}
       `,
     ]);
 
     const total = parseInt((countResult.rows[0] as { total: string }).total, 10);
     const data = dataResult.rows as (Customer & { lead_source_name?: string; last_visit?: string })[];
 
-    return jsonResponse({ data, total, page, pageSize: 20 });
+    return jsonResponse({ data, total, page, pageSize: limit });
   } catch {
     return jsonResponse({ error: 'Internal server error' }, 500);
   }

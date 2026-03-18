@@ -47,7 +47,10 @@ export function NavigationBar() {
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href === '/customers' && pathname.startsWith('/customers'));
+              (item.href === '/income' && pathname.startsWith('/income')) ||
+              (item.href === '/expenses' && pathname.startsWith('/expenses')) ||
+              (item.href === '/customers' && pathname.startsWith('/customers')) ||
+              (item.href === '/service-types' && pathname.startsWith('/service-types'));
             return (
               <li key={item.href}>
                 <Link
@@ -79,7 +82,10 @@ export function NavigationBar() {
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href === '/customers' && pathname.startsWith('/customers'));
+              (item.href === '/income' && pathname.startsWith('/income')) ||
+              (item.href === '/expenses' && pathname.startsWith('/expenses')) ||
+              (item.href === '/customers' && pathname.startsWith('/customers')) ||
+              (item.href === '/service-types' && pathname.startsWith('/service-types'));
             return (
               <Link
                 key={item.href}

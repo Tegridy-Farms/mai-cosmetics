@@ -183,7 +183,10 @@ export function CustomerForm({
           </div>
 
           <div>
-            <Label htmlFor="phone">{t.forms.phone}</Label>
+            <Label htmlFor="phone">
+              {t.forms.phone}{' '}
+              <span className="font-normal text-text-muted">({t.forms.customerOptional})</span>
+            </Label>
             <Input
               id="phone"
               type="tel"
@@ -196,7 +199,10 @@ export function CustomerForm({
           </div>
 
           <div>
-            <Label htmlFor="email">{t.forms.email}</Label>
+            <Label htmlFor="email">
+              {t.forms.email}{' '}
+              <span className="font-normal text-text-muted">({t.forms.customerOptional})</span>
+            </Label>
             <Input
               id="email"
               type="email"

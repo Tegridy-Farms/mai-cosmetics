@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { t } from '@/lib/translations';
+import type { ExpenseEntry } from '@/types';
 
 const CATEGORY_OPTIONS = [
   { value: 'equipment', label: t.categories.equipment },
@@ -32,11 +33,26 @@ const FormSchema = createFormSchema();
 
 type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
 
-export function ExpenseForm() {
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState('');
+interface ExpenseFormProps {
+  expenseId?: number;
+  initialData?: {
+    description: string;
+    category: ExpenseEntry['category'];
+    date: string;
+    amount: number;
+  };
+}
+
+export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
+  const isEdit = !!expenseId;
+  const [description, setDescription] = useState(initialData?.description ?? '');
+  const [category, setCategory] = useState(initialData?.category ?? '');
+  const [date, setDate] = useState(
+    initialData?.date ?? new Date().toISOString().split('T')[0]
+  );
+  const [amount, setAmount] = useState(
+    initialData?.amount != null ? String(initialData.amount) : ''
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast, toasts } = useToast();
@@ -69,8 +85,11 @@ export function ExpenseForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/expenses', {
-        method: 'POST',
+      const url = isEdit ? `/api/expenses/${expenseId}` : '/api/expenses';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(result.data),
       });
@@ -81,10 +100,15 @@ export function ExpenseForm() {
       }
 
       showToast(t.toast.expenseLogged, 'success');
-      setDescription('');
-      setCategory('');
-      setDate(new Date().toISOString().split('T')[0]);
-      setAmount('');
+
+      if (isEdit) {
+        window.location.href = '/expenses';
+      } else {
+        setDescription('');
+        setCategory('');
+        setDate(new Date().toISOString().split('T')[0]);
+        setAmount('');
+      }
     } catch {
       showToast(t.toast.couldNotSave, 'error');
     } finally {
@@ -194,10 +218,10 @@ export function ExpenseForm() {
           </Button>
 
           <Link
-            href="/"
+            href="/expenses"
             className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
           >
-            {t.forms.backToDashboard}
+            {t.pages.backToExpenses}
           </Link>
         </div>
       </form>

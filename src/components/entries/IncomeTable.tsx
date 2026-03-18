@@ -4,17 +4,21 @@ import React from 'react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate, formatAmount } from '@/lib/format';
 import { t } from '@/lib/translations';
-import type { IncomeEntry } from '@/types';
+import Link from 'next/link';
+import type { IncomeEntry, ServiceType } from '@/types';
 
 interface IncomeTableProps {
   entries: IncomeEntry[];
+  serviceTypes: ServiceType[];
   isLoading: boolean;
   onDelete: (id: number) => void;
 }
 
 const SKELETON_ROWS = 5;
 
-export function IncomeTable({ entries, isLoading, onDelete }: IncomeTableProps) {
+export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: IncomeTableProps) {
+  const getServiceTypeName = (id: number) =>
+    serviceTypes.find((st) => st.id === id)?.name ?? String(id);
   return (
     <div className="overflow-x-auto overscroll-x-contain">
       <table className="w-full text-sm text-start">
@@ -55,18 +59,29 @@ export function IncomeTable({ entries, isLoading, onDelete }: IncomeTableProps) 
               <tr key={entry.id} className="border-b border-border hover:bg-background">
                 <td className="py-3 px-4 text-text-primary">{formatDate(entry.date)}</td>
                 <td className="py-3 px-4 text-text-primary">{entry.service_name}</td>
-                <td className="py-3 px-4 text-text-primary">{entry.service_type_id}</td>
+                <td className="py-3 px-4 text-text-primary">{getServiceTypeName(entry.service_type_id)}</td>
                 <td className="py-3 px-4 text-text-primary">{entry.duration_minutes}</td>
                 <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {formatAmount(entry.amount)}
                 </td>
                 <td className="py-3 px-4">
-                  <button
-                    aria-label={`מחקי הכנסה: ${entry.service_name}, ${formatDate(entry.date)}`}
-                    onClick={() => onDelete(entry.id)}
-                    className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-error transition-colors touch-manipulation"
-                  >
-                    <svg
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/income/${entry.id}/edit`}
+                      aria-label={`עריכת הכנסה: ${entry.service_name}, ${formatDate(entry.date)}`}
+                      className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-primary transition-colors touch-manipulation"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </Link>
+                    <button
+                      aria-label={`מחקי הכנסה: ${entry.service_name}, ${formatDate(entry.date)}`}
+                      onClick={() => onDelete(entry.id)}
+                      className="p-2 -m-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-text-muted hover:text-error transition-colors touch-manipulation"
+                    >
+                      <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
                       height="16"
@@ -84,7 +99,8 @@ export function IncomeTable({ entries, isLoading, onDelete }: IncomeTableProps) 
                       <path d="M14 11v6" />
                       <path d="M9 6V4h6v2" />
                     </svg>
-                  </button>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

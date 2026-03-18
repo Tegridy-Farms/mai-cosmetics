@@ -49,7 +49,7 @@ export function LeadSourceForm({
       sortOrder.trim() !== '' &&
       (Number.isNaN(parsedSortOrder) || parsedSortOrder < 0)
     ) {
-      setErrors({ sort_order: t.leadSources.nameRequired });
+      setErrors({ sort_order: t.leadSources.sortOrderInvalid });
       return;
     }
 

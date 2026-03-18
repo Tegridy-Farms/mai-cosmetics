@@ -130,6 +130,7 @@ export default function IncomePage() {
 
         <IncomeTable
           entries={entries}
+          serviceTypes={serviceTypes}
           isLoading={isLoading}
           onDelete={handleDeleteClick}
         />

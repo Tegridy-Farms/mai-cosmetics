@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { CustomerCombobox } from '@/components/ui/customer-combobox';
 import { Label } from '@/components/ui/label';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { t } from '@/lib/translations';
@@ -33,24 +34,41 @@ interface ServiceType {
   default_price?: number | null;
 }
 
-interface Customer {
-  id: number;
-  first_name: string;
-  last_name: string;
-}
-
 interface IncomeFormProps {
   serviceTypes: ServiceType[];
-  customers?: Customer[];
+  incomeId?: number;
+  initialData?: {
+    service_name: string;
+    service_type_id: number;
+    customer_id?: number | null;
+    date: string;
+    duration_minutes: number;
+    amount: number;
+  };
 }
 
-export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
-  const [serviceName, setServiceName] = useState('');
-  const [serviceTypeId, setServiceTypeId] = useState('');
-  const [customerId, setCustomerId] = useState('');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [durationMinutes, setDurationMinutes] = useState('');
-  const [amount, setAmount] = useState('');
+export function IncomeForm({
+  serviceTypes,
+  incomeId,
+  initialData,
+}: IncomeFormProps) {
+  const isEdit = !!incomeId;
+  const [serviceName, setServiceName] = useState(initialData?.service_name ?? '');
+  const [serviceTypeId, setServiceTypeId] = useState(
+    initialData?.service_type_id != null ? String(initialData.service_type_id) : ''
+  );
+  const [customerId, setCustomerId] = useState(
+    initialData?.customer_id != null ? String(initialData.customer_id) : ''
+  );
+  const [date, setDate] = useState(
+    initialData?.date ?? new Date().toISOString().split('T')[0]
+  );
+  const [durationMinutes, setDurationMinutes] = useState(
+    initialData?.duration_minutes != null ? String(initialData.duration_minutes) : ''
+  );
+  const [amount, setAmount] = useState(
+    initialData?.amount != null ? String(initialData.amount) : ''
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast, toasts } = useToast();
@@ -58,11 +76,6 @@ export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
   const serviceTypeOptions = serviceTypes.map((st) => ({
     value: String(st.id),
     label: st.name,
-  }));
-
-  const customerOptions = customers.map((c) => ({
-    value: String(c.id),
-    label: `${c.first_name} ${c.last_name}`,
   }));
 
   const handleServiceTypeChange = (value: string) => {
@@ -105,8 +118,10 @@ export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/income', {
-        method: 'POST',
+      const url = isEdit ? `/api/income/${incomeId}` : '/api/income';
+      const method = isEdit ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           service_name: result.data.service_name,
@@ -124,6 +139,10 @@ export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
       }
 
       showToast(t.toast.incomeLogged, 'success');
+      if (isEdit) {
+        window.location.href = '/income';
+        return;
+      }
       setServiceName('');
       setServiceTypeId('');
       setCustomerId('');
@@ -187,22 +206,18 @@ export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
           </div>
 
           {/* Customer (optional) */}
-          {customerOptions.length > 0 && (
-            <div>
-              <Label htmlFor="customer_id">
-                {t.forms.customer}{' '}
-                <span className="text-text-muted font-normal">({t.forms.selectCustomer})</span>
-              </Label>
-              <Select
-                id="customer_id"
-                options={customerOptions}
-                placeholder={t.forms.selectCustomer}
-                value={customerId}
-                onValueChange={setCustomerId}
-                disabled={isSubmitting}
-              />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="customer_id">
+              {t.forms.customer}{' '}
+              <span className="text-text-muted font-normal">({t.forms.selectCustomer})</span>
+            </Label>
+            <CustomerCombobox
+              id="customer_id"
+              value={customerId}
+              onValueChange={(id) => setCustomerId(id)}
+              disabled={isSubmitting}
+            />
+          </div>
 
           {/* Date */}
           <div>
@@ -278,10 +293,10 @@ export function IncomeForm({ serviceTypes, customers = [] }: IncomeFormProps) {
           </Button>
 
           <Link
-            href="/"
+            href={isEdit ? '/income' : '/income'}
             className="block text-center text-primary underline hover:text-primary-dark text-sm transition-colors"
           >
-            {t.forms.backToDashboard}
+            {t.pages.backToIncome}
           </Link>
         </div>
       </form>

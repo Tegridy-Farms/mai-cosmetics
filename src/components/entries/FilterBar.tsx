@@ -33,10 +33,15 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
     onClear();
   };
 
-  const serviceTypeOptions = serviceTypes.map((st) => ({
-    value: String(st.id),
-    label: st.name,
-  }));
+  const serviceTypeOptions = [
+    { value: '__all__', label: t.entries.allTypes },
+    ...serviceTypes.map((st) => ({ value: String(st.id), label: st.name })),
+  ];
+
+  const categoryOptionsWithAll = [
+    { value: '__all__', label: t.entries.allCategories },
+    ...CATEGORY_OPTIONS,
+  ];
 
   return (
     <div className="flex flex-wrap gap-3 sm:gap-3 gap-y-4 items-end">
@@ -46,9 +51,9 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
           <Select
             id="service_type_id"
             options={serviceTypeOptions}
-            value={filters.service_type_id ? String(filters.service_type_id) : ''}
+            value={filters.service_type_id ? String(filters.service_type_id) : '__all__'}
             onValueChange={(v) =>
-              onChange({ ...filters, service_type_id: v ? Number(v) : undefined })
+              onChange({ ...filters, service_type_id: v === '__all__' ? undefined : Number(v) })
             }
             placeholder={t.entries.allTypes}
           />
@@ -59,9 +64,9 @@ export function FilterBar({ variant, filters, onChange, onClear, serviceTypes = 
           <Label htmlFor="category">{t.entries.category}</Label>
           <Select
             id="category"
-            options={CATEGORY_OPTIONS}
-            value={filters.category ?? ''}
-            onValueChange={(v) => onChange({ ...filters, category: v || undefined })}
+            options={categoryOptionsWithAll}
+            value={filters.category ?? '__all__'}
+            onValueChange={(v) => onChange({ ...filters, category: v === '__all__' ? undefined : v })}
             placeholder={t.entries.allCategories}
           />
         </div>
