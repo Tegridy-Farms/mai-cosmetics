@@ -2,6 +2,7 @@ export interface ServiceType {
   id: number;
   name: string;
   default_price?: number | null;
+  default_duration?: number | null;
   created_at?: string;
 }
 

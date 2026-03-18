@@ -33,6 +33,7 @@ interface ServiceType {
   id: number;
   name: string;
   default_price?: number | null;
+  default_duration?: number | null;
 }
 
 interface IncomeFormProps {
@@ -115,8 +116,13 @@ export function IncomeForm({
     setServiceTypeId(value);
     if (value) {
       const st = effectiveServiceTypes.find((s) => String(s.id) === value);
-      if (st?.default_price != null && st.default_price > 0) {
-        setAmount(String(st.default_price));
+      if (st) {
+        if (st.default_price != null && st.default_price > 0) {
+          setAmount(String(st.default_price));
+        }
+        if (st.default_duration != null && st.default_duration > 0) {
+          setDurationMinutes(String(st.default_duration));
+        }
       }
     }
   };

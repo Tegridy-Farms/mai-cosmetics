@@ -31,6 +31,9 @@ export function ServiceTypesTable({
             <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">
               {t.serviceTypes.defaultPrice}
             </th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">
+              {t.serviceTypes.defaultDuration}
+            </th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">
               {t.entries.actions}
             </th>
@@ -40,7 +43,7 @@ export function ServiceTypesTable({
           {isLoading ? (
             Array.from({ length: SKELETON_ROWS }).map((_, i) => (
               <tr key={i} data-testid="skeleton-row" className="border-b border-border">
-                {Array.from({ length: 3 }).map((_, j) => (
+                {Array.from({ length: 4 }).map((_, j) => (
                   <td key={j} className="py-3 px-4">
                     <div className="h-4 bg-skeleton rounded animate-pulse" />
                   </td>
@@ -49,7 +52,7 @@ export function ServiceTypesTable({
             ))
           ) : serviceTypes.length === 0 ? (
             <tr>
-              <td colSpan={3}>
+              <td colSpan={4}>
                 <EmptyState
                   title={t.serviceTypes.noServiceTypes}
                   description={t.serviceTypes.tryAdding}
@@ -64,6 +67,9 @@ export function ServiceTypesTable({
                 <td className="py-3 px-4 text-text-primary">{st.name}</td>
                 <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {st.default_price != null ? formatAmount(st.default_price) : '—'}
+                </td>
+                <td className="py-3 px-4 text-text-primary text-end font-mono">
+                  {st.default_duration != null ? st.default_duration : '—'}
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">

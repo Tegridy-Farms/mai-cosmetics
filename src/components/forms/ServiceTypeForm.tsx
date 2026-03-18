@@ -21,6 +21,12 @@ const FormSchema = z.object({
       z.null(),
     ])
     .optional(),
+  default_duration: z
+    .union([
+      z.number().int().positive(t.serviceTypes.defaultDurationInvalid),
+      z.null(),
+    ])
+    .optional(),
 });
 
 type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
@@ -28,6 +34,7 @@ type FormErrors = Partial<Record<keyof z.infer<typeof FormSchema>, string>>;
 interface ServiceTypeFormProps {
   initialName?: string;
   initialDefaultPrice?: number | null;
+  initialDefaultDuration?: number | null;
   serviceTypeId?: number;
   onSuccess?: () => void;
 }
@@ -35,12 +42,16 @@ interface ServiceTypeFormProps {
 export function ServiceTypeForm({
   initialName = '',
   initialDefaultPrice,
+  initialDefaultDuration,
   serviceTypeId,
   onSuccess,
 }: ServiceTypeFormProps) {
   const [name, setName] = useState(initialName);
   const [defaultPrice, setDefaultPrice] = useState(
     initialDefaultPrice != null ? String(initialDefaultPrice) : ''
+  );
+  const [defaultDuration, setDefaultDuration] = useState(
+    initialDefaultDuration != null ? String(initialDefaultDuration) : ''
   );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,17 +62,26 @@ export function ServiceTypeForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const trimmed = defaultPrice.trim();
+    const trimmedPrice = defaultPrice.trim();
     const parsedDefaultPrice =
-      trimmed === '' ? null : Number(trimmed);
-    if (trimmed !== '' && (Number.isNaN(parsedDefaultPrice) || parsedDefaultPrice! < 0)) {
+      trimmedPrice === '' ? null : Number(trimmedPrice);
+    if (trimmedPrice !== '' && (Number.isNaN(parsedDefaultPrice) || parsedDefaultPrice! < 0)) {
       setErrors({ default_price: t.serviceTypes.defaultPriceInvalid });
+      return;
+    }
+
+    const trimmedDuration = defaultDuration.trim();
+    const parsedDefaultDuration =
+      trimmedDuration === '' ? null : Number(trimmedDuration);
+    if (trimmedDuration !== '' && (Number.isNaN(parsedDefaultDuration) || parsedDefaultDuration! < 1)) {
+      setErrors({ default_duration: t.serviceTypes.defaultDurationInvalid });
       return;
     }
 
     const rawData = {
       name: name.trim(),
       default_price: parsedDefaultPrice,
+      default_duration: parsedDefaultDuration,
     };
     const result = FormSchema.safeParse(rawData);
 
@@ -92,6 +112,7 @@ export function ServiceTypeForm({
         body: JSON.stringify({
           name: result.data.name,
           default_price: result.data.default_price ?? null,
+          default_duration: result.data.default_duration ?? null,
         }),
       });
 
@@ -109,6 +130,7 @@ export function ServiceTypeForm({
       } else {
         setName('');
         setDefaultPrice('');
+        setDefaultDuration('');
         window.location.href = '/service-types';
       }
     } catch {
@@ -180,6 +202,38 @@ export function ServiceTypeForm({
                 className="text-[12px] text-error mt-1"
               >
                 {errors.default_price}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="default_duration">
+              {t.serviceTypes.defaultDuration}{' '}
+              <span className="text-text-muted font-normal">
+                ({t.serviceTypes.defaultDurationOptional})
+              </span>
+            </Label>
+            <Input
+              id="default_duration"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="—"
+              value={defaultDuration}
+              onChange={(e) => setDefaultDuration(e.target.value)}
+              error={!!errors.default_duration}
+              aria-invalid={errors.default_duration ? 'true' : undefined}
+              aria-describedby={
+                errors.default_duration ? 'default_duration-error' : undefined
+              }
+              disabled={isSubmitting}
+            />
+            {errors.default_duration && (
+              <p
+                id="default_duration-error"
+                className="text-[12px] text-error mt-1"
+              >
+                {errors.default_duration}
               </p>
             )}
           </div>

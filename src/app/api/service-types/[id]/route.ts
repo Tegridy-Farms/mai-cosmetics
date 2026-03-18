@@ -21,7 +21,7 @@ export async function GET(
   }
 
   const result = await sql`
-    SELECT id, name, default_price, created_at FROM service_types WHERE id = ${id}
+    SELECT id, name, default_price, default_duration, created_at FROM service_types WHERE id = ${id}
   `;
 
   if (result.rows.length === 0) {
@@ -55,12 +55,12 @@ export async function PUT(
       return jsonResponse({ error: 'Validation failed', details: parsed.error.issues }, 400);
     }
 
-    const { name, default_price } = parsed.data;
+    const { name, default_price, default_duration } = parsed.data;
 
     const result = await sql`
-      UPDATE service_types SET name = ${name}, default_price = ${default_price ?? null}
+      UPDATE service_types SET name = ${name}, default_price = ${default_price ?? null}, default_duration = ${default_duration ?? null}
       WHERE id = ${id}
-      RETURNING id, name, default_price, created_at
+      RETURNING id, name, default_price, default_duration, created_at
     `;
 
     return jsonResponse(result.rows[0]);

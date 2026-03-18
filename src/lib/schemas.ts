@@ -42,6 +42,9 @@ export const ServiceTypeSchema = z.object({
   default_price: z
     .union([z.number().nonnegative(), z.null()])
     .optional(),
+  default_duration: z
+    .union([z.number().int().positive(), z.null()])
+    .optional(),
 });
 
 export const LeadSourceSchema = z.object({

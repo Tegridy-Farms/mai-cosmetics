@@ -44,6 +44,7 @@ export default function EditServiceTypePage() {
       <ServiceTypeForm
         initialName={serviceType.name}
         initialDefaultPrice={serviceType.default_price}
+        initialDefaultDuration={serviceType.default_duration}
         serviceTypeId={serviceType.id}
       />
     </div>
