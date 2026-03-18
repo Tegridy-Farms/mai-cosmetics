@@ -24,6 +24,8 @@ const navItems: { label: string; href: string; icon: LucideIcon }[] = [
 export function NavigationBar() {
   const pathname = usePathname();
 
+  if (pathname === "/login") return null;
+
   return (
     <>
       {/* Desktop: vertical sidebar - RTL: sidebar on right */}
