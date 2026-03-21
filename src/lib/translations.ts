@@ -234,6 +234,7 @@ export const t = {
     title: 'לקוחות',
     addCustomer: 'הוספת לקוחה',
     editCustomer: '✏️ עריכת לקוחה',
+    addTreatment: 'הוספת טיפול',
     viewCustomer: 'פרופיל לקוחה',
     noCustomers: 'אין עדיין לקוחות.',
     tryAdding: 'הוסיפי את הלקוחה הראשונה.',

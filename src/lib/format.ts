@@ -1,10 +1,25 @@
 const LOCALE = 'he-IL';
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
- * Format a date string (YYYY-MM-DD) for Hebrew locale display.
+ * Format a calendar date for Hebrew locale display.
+ * Accepts Postgres/API `YYYY-MM-DD` and ISO datetimes from drivers (e.g. `…T00:00:00.000Z`).
+ * Date-only values use noon local time to avoid timezone shifting the calendar day.
  */
 export function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00');
+  const s = dateStr.trim();
+  if (!s) return '—';
+
+  let d: Date;
+  if (DATE_ONLY.test(s)) {
+    d = new Date(`${s}T12:00:00`);
+  } else {
+    d = new Date(s);
+  }
+
+  if (Number.isNaN(d.getTime())) return '—';
+
   return d.toLocaleDateString(LOCALE, {
     month: 'short',
     day: 'numeric',

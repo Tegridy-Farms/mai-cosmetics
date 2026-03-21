@@ -20,18 +20,20 @@ interface ServiceType {
   default_duration?: number | null;
 }
 
+export type IncomeFormInitialData = {
+  service_name?: string;
+  service_type_id?: number;
+  customer_id?: number | null;
+  date?: string;
+  duration_minutes?: number;
+  amount?: number;
+  comment?: string | null;
+};
+
 interface IncomeFormProps {
   serviceTypes: ServiceType[];
   incomeId?: number;
-  initialData?: {
-    service_name: string;
-    service_type_id: number;
-    customer_id?: number | null;
-    date: string;
-    duration_minutes: number;
-    amount: number;
-    comment?: string | null;
-  };
+  initialData?: IncomeFormInitialData;
 }
 
 export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormProps) {

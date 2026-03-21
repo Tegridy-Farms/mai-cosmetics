@@ -14,7 +14,7 @@ export const GET = withApiHandler(async (_request, { params }) => {
       c.id, c.first_name, c.last_name, c.phone, c.email, c.lead_source_id,
       c.questionnaire_data, c.created_at, c.updated_at,
       ls.name AS lead_source_name,
-      (SELECT MAX(ie.date) FROM income_entries ie WHERE ie.customer_id = c.id) AS last_visit
+      (SELECT MAX(ie.date)::text FROM income_entries ie WHERE ie.customer_id = c.id) AS last_visit
     FROM customers c
     LEFT JOIN lead_sources ls ON ls.id = c.lead_source_id
     WHERE c.id = ${id}

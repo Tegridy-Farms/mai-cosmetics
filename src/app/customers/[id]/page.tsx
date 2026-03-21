@@ -117,9 +117,14 @@ export default function CustomerDetailPage() {
         <h1 className="text-2xl sm:text-[30px] font-bold text-text-primary">
           {customer.first_name} {customer.last_name}
         </h1>
-        <Link href={`/customers/${id}/edit`}>
-          <Button variant="primary">{t.customers.editCustomer}</Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/income/new?customer_id=${id}`}>
+            <Button variant="primary">{t.customers.addTreatment}</Button>
+          </Link>
+          <Link href={`/customers/${id}/edit`}>
+            <Button variant="ghost">{t.customers.editCustomer}</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-xl p-6 shadow-sm mb-6">
