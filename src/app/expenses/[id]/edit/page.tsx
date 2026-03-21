@@ -36,6 +36,7 @@ export default async function ExpenseEditPage({
           category: entry.category,
           date: entry.date,
           amount: entry.amount,
+          invoice_url: entry.invoice_url,
         }}
       />
     </main>

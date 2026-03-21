@@ -16,6 +16,7 @@ Copy [`.env.example`](.env.example) → `.env.local` and fill:
 - **`DATABASE_URL`**: Postgres connection string
 - **`ADMIN_PASSWORD`**: single admin password used for all access
 - **`NEXT_PUBLIC_BASE_URL`** (optional): base URL for server components fetching API. Defaults to `http://localhost:3000` in [`src/app/page.tsx`](src/app/page.tsx).
+- **`BLOB_READ_WRITE_TOKEN`**: Vercel Blob read-write token (from the Vercel dashboard) for authenticated uploads such as expense invoice files.
 
 ### Run
 
@@ -92,7 +93,7 @@ flowchart LR
 
 ## Database schema (source of truth = `migrations/`)
 
-The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 015) to a Postgres database referenced by `DATABASE_URL`.
+The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 016) to a Postgres database referenced by `DATABASE_URL`.
 
 > There is no automated migration runner script in this repo today; migrations are intended to be run manually (or via your deployment/DB tool of choice) in order.
 
@@ -154,7 +155,9 @@ Indexes:
 
 #### `expense_entries`
 
-Migration: [`migrations/004_create_expense_entries.sql`](migrations/004_create_expense_entries.sql)
+Migrations:
+- [`migrations/004_create_expense_entries.sql`](migrations/004_create_expense_entries.sql)
+- [`migrations/016_add_invoice_url_to_expense_entries.sql`](migrations/016_add_invoice_url_to_expense_entries.sql)
 
 Columns:
 - **`id`**: `SERIAL PRIMARY KEY`
@@ -162,6 +165,7 @@ Columns:
 - **`category`**: `VARCHAR(50) NOT NULL CHECK (category IN ('equipment','materials','consumables','other'))`
 - **`date`**: `DATE NOT NULL`
 - **`amount`**: `NUMERIC(10,2) NOT NULL CHECK (amount > 0)`
+- **`invoice_url`**: `TEXT` nullable (Vercel Blob URL for an attached invoice file)
 - **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
 
 Indexes:
@@ -514,4 +518,4 @@ This requires coordinating **DB + validation + UI**:
 ## Testing and deployment
 
 - Tests: Jest is configured in [`package.json`](package.json) (`**/tests/**/*.test.ts(x)`). Baseline suites live under [`tests/`](tests/) (HTTP helpers, Zod field-error mapping, API toast mapping). Global coverage thresholds are set in `package.json` (raise them as you add tests).
-- Deployment: Vercel expects `DATABASE_URL` + `ADMIN_PASSWORD`. [`vercel.json`](vercel.json) declares `framework: nextjs`.
+- Deployment: Vercel expects `DATABASE_URL` + `ADMIN_PASSWORD`; add `BLOB_READ_WRITE_TOKEN` when using expense invoice uploads. [`vercel.json`](vercel.json) declares `framework: nextjs`.

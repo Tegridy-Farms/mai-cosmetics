@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ const CATEGORY_OPTIONS = [
   { value: 'consumables', label: t.categories.consumables },
   { value: 'other', label: t.categories.other },
 ];
+
+const INVOICE_ACCEPT = '.pdf,image/jpeg,image/png,image/webp,application/pdf';
 
 function createFormSchema() {
   return z.object({
@@ -40,11 +42,13 @@ interface ExpenseFormProps {
     category: ExpenseEntry['category'];
     date: string;
     amount: number;
+    invoice_url?: string | null;
   };
 }
 
 export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
   const isEdit = !!expenseId;
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [category, setCategory] = useState(initialData?.category ?? '');
   const [date, setDate] = useState(
@@ -53,6 +57,11 @@ export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
   const [amount, setAmount] = useState(
     initialData?.amount != null ? String(initialData.amount) : ''
   );
+  const [existingInvoiceUrl] = useState<string | null>(
+    () => initialData?.invoice_url ?? null
+  );
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [removeInvoiceRequested, setRemoveInvoiceRequested] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast, toasts } = useToast();
@@ -85,13 +94,42 @@ export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
     setIsSubmitting(true);
 
     try {
+      let invoice_url: string | null;
+      if (fileToUpload) {
+        const formData = new FormData();
+        formData.append('file', fileToUpload);
+        const uploadRes = await fetch('/api/blob/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!uploadRes.ok) {
+          showToast(t.toast.invoiceUploadFailed, 'error');
+          setIsSubmitting(false);
+          return;
+        }
+        const uploadJson = (await uploadRes.json()) as { url?: string };
+        if (!uploadJson.url) {
+          showToast(t.toast.invoiceUploadFailed, 'error');
+          setIsSubmitting(false);
+          return;
+        }
+        invoice_url = uploadJson.url;
+      } else if (removeInvoiceRequested) {
+        invoice_url = null;
+      } else {
+        invoice_url = existingInvoiceUrl ?? null;
+      }
+
       const url = isEdit ? `/api/expenses/${expenseId}` : '/api/expenses';
       const method = isEdit ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result.data),
+        body: JSON.stringify({
+          ...result.data,
+          invoice_url,
+        }),
       });
 
       if (!response.ok) {
@@ -108,6 +146,9 @@ export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
         setCategory('');
         setDate(new Date().toISOString().split('T')[0]);
         setAmount('');
+        setFileToUpload(null);
+        setRemoveInvoiceRequested(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
       }
     } catch {
       showToast(t.toast.couldNotSave, 'error');
@@ -115,6 +156,8 @@ export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
       setIsSubmitting(false);
     }
   };
+
+  const showExistingLink = existingInvoiceUrl && !fileToUpload && !removeInvoiceRequested;
 
   return (
     <div>
@@ -210,6 +253,74 @@ export function ExpenseForm({ expenseId, initialData }: ExpenseFormProps) {
               <p id="amount-error" className="text-[12px] text-error mt-1">
                 {errors.amount}
               </p>
+            )}
+          </div>
+
+          {/* Invoice */}
+          <div className="border border-border rounded-lg p-4 bg-background/50">
+            <Label htmlFor="invoice">{t.forms.expenseInvoice}</Label>
+            <p className="text-[12px] text-text-muted mt-1 mb-2">{t.forms.expenseInvoiceHint}</p>
+            <input
+              ref={fileInputRef}
+              id="invoice"
+              type="file"
+              accept={INVOICE_ACCEPT}
+              disabled={isSubmitting}
+              className="block w-full text-sm text-text-primary file:me-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:text-sm file:font-medium"
+              onChange={(e) => {
+                const f = e.target.files?.[0] ?? null;
+                setFileToUpload(f);
+                if (f) setRemoveInvoiceRequested(false);
+              }}
+            />
+            {fileToUpload && (
+              <p className="text-[12px] text-text-muted mt-2">{fileToUpload.name}</p>
+            )}
+            {showExistingLink && (
+              <a
+                href={existingInvoiceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-sm text-primary underline hover:text-primary-dark"
+              >
+                {t.forms.viewInvoice}
+              </a>
+            )}
+            {removeInvoiceRequested && (
+              <p className="text-[12px] text-text-muted mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>{t.forms.invoiceWillBeRemoved}</span>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => setRemoveInvoiceRequested(false)}
+                  className="text-primary hover:underline disabled:opacity-50"
+                >
+                  {t.forms.cancelInvoiceRemoval}
+                </button>
+              </p>
+            )}
+            {fileToUpload && (
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setFileToUpload(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="mt-2 text-sm text-error hover:underline disabled:opacity-50"
+              >
+                {t.forms.clearInvoiceFile}
+              </button>
+            )}
+            {showExistingLink && !removeInvoiceRequested && (
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => setRemoveInvoiceRequested(true)}
+                className="mt-2 text-sm text-error hover:underline disabled:opacity-50"
+              >
+                {t.forms.removeInvoice}
+              </button>
             )}
           </div>
 

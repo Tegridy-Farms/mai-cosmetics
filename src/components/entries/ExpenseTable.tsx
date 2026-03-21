@@ -32,6 +32,7 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.description}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.category}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted text-center">{t.entries.invoice}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.actions}</th>
           </tr>
         </thead>
@@ -39,7 +40,7 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
           {isLoading ? (
             Array.from({ length: SKELETON_ROWS }).map((_, i) => (
               <tr key={i} data-testid="skeleton-row" className="border-b border-border">
-                {Array.from({ length: 5 }).map((_, j) => (
+                {Array.from({ length: 6 }).map((_, j) => (
                   <td key={j} className="py-3 px-4">
                     <div className="h-4 bg-skeleton rounded animate-pulse" />
                   </td>
@@ -48,7 +49,7 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
             ))
           ) : entries.length === 0 ? (
             <tr>
-              <td colSpan={5}>
+              <td colSpan={6}>
                 <EmptyState
                   title={t.entries.noEntriesMatch}
                   description={t.entries.tryAdjusting}
@@ -65,6 +66,38 @@ export function ExpenseTable({ entries, isLoading, onDelete }: ExpenseTableProps
                 <td className="py-3 px-4 text-text-primary">{CATEGORY_LABELS[entry.category] ?? entry.category}</td>
                 <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {formatAmount(entry.amount)}
+                </td>
+                <td className="py-3 px-4 text-center">
+                  {entry.invoice_url ? (
+                    <a
+                      href={entry.invoice_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t.entries.openInvoiceAria}
+                      className="inline-flex items-center justify-center p-2 -m-2 min-w-[44px] min-h-[44px] text-primary hover:text-primary-dark transition-colors touch-manipulation"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <span className="text-text-muted">—</span>
+                  )}
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">

@@ -13,7 +13,7 @@ function escapeCsv(value: string): string {
 
 export const GET = withApiHandlerNoParams(async () => {
   const result = await sql`
-    SELECT date, description, category, amount
+    SELECT date, description, category, amount, invoice_url
     FROM expense_entries
     ORDER BY date DESC, id DESC
   `;
@@ -23,6 +23,7 @@ export const GET = withApiHandlerNoParams(async () => {
     description: string;
     category: string;
     amount: number;
+    invoice_url: string | null;
   }>;
 
   const today = new Date().toISOString().split('T')[0];
@@ -30,9 +31,10 @@ export const GET = withApiHandlerNoParams(async () => {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode('Date,Description,Category,Amount\n'));
+      controller.enqueue(encoder.encode('Date,Description,Category,Amount,InvoiceUrl\n'));
       for (const row of rows) {
-        const line = `${row.date},${escapeCsv(row.description)},${escapeCsv(row.category)},${row.amount}\n`;
+        const invoice = row.invoice_url ?? '';
+        const line = `${row.date},${escapeCsv(row.description)},${escapeCsv(row.category)},${row.amount},${escapeCsv(invoice)}\n`;
         controller.enqueue(encoder.encode(line));
       }
       controller.close();

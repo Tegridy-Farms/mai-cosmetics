@@ -107,6 +107,7 @@ export interface ExpenseEntry {
   category: 'equipment' | 'materials' | 'consumables' | 'other';
   date: string;
   amount: number;
+  invoice_url?: string | null;
   created_at: string;
 }
 

@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db';
 import { json, parseJsonBody, parseSchema, parseSearchParams, withApiHandlerNoParams } from '@/lib/http';
+import { asSqlString } from '@/lib/sql-primitive';
 import { ExpenseEntrySchema, ExpenseQuerySchema } from '@/lib/schemas';
 import type { ExpenseEntry } from '@/types';
 
@@ -7,12 +8,12 @@ export const POST = withApiHandlerNoParams(async (request) => {
   const body = await parseJsonBody(request);
   const parsed = parseSchema(ExpenseEntrySchema, body);
 
-  const { description, category, date, amount } = parsed;
+  const { description, category, date, amount, invoice_url } = parsed;
 
   const result = await sql`
-    INSERT INTO expense_entries (description, category, date, amount)
-    VALUES (${description}, ${category}, ${date}, ${amount})
-    RETURNING id, description, category, date, amount, created_at
+    INSERT INTO expense_entries (description, category, date, amount, invoice_url)
+    VALUES (${description}, ${category}, ${date}, ${amount}, ${asSqlString(invoice_url)})
+    RETURNING id, description, category, date, amount, invoice_url, created_at
   `;
 
   return json(result.rows[0], 201);
@@ -33,7 +34,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
         AND (${date_to}::date IS NULL OR date <= ${date_to ?? null})
     `,
     sql`
-      SELECT id, description, category, date, amount, created_at
+      SELECT id, description, category, date, amount, invoice_url, created_at
       FROM expense_entries
       WHERE (${category}::text IS NULL OR category = ${category ?? null})
         AND (${date_from}::date IS NULL OR date >= ${date_from ?? null})

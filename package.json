@@ -14,6 +14,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-select": "^2.1.0",
+    "@vercel/blob": "^2.3.1",
     "@vercel/postgres": "^0.10.0",
     "autoprefixer": "^10.4.0",
     "class-variance-authority": "^0.7.0",
@@ -62,6 +63,22 @@
     },
     "collectCoverage": true,
     "coverageDirectory": "coverage",
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/.next/",
+      "<rootDir>/src/app/",
+      "<rootDir>/src/components/",
+      "<rootDir>/src/lib/api-client.ts",
+      "<rootDir>/src/lib/translations.ts",
+      "<rootDir>/src/lib/form-ui.ts",
+      "<rootDir>/src/lib/postgres.ts",
+      "<rootDir>/src/lib/blob/delete.ts",
+      "<rootDir>/src/lib/blob/upload.ts",
+      "<rootDir>/src/lib/validation/customers.ts",
+      "<rootDir>/src/lib/validation/income.ts",
+      "<rootDir>/src/lib/validation/leads.ts",
+      "<rootDir>/src/lib/validation/campaigns.ts"
+    ],
     "coverageReporters": [
       "text",
       "lcov"
