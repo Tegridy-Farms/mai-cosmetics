@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/select';
 import { t } from '@/lib/translations';
 
 export type IncomeFormErrors = Partial<
-  Record<'service_name' | 'service_type_id' | 'date' | 'duration_minutes' | 'amount', string>
+  Record<'service_name' | 'service_type_id' | 'date' | 'duration_minutes' | 'amount' | 'comment', string>
 >;
 
 interface IncomeFormFieldsProps {
@@ -26,6 +26,8 @@ interface IncomeFormFieldsProps {
   setDurationMinutes: (v: string) => void;
   amount: string;
   setAmount: (v: string) => void;
+  comment: string;
+  setComment: (v: string) => void;
   errors: IncomeFormErrors;
   isSubmitting: boolean;
   isEdit: boolean;
@@ -47,6 +49,8 @@ export function IncomeFormFields({
   setDurationMinutes,
   amount,
   setAmount,
+  comment,
+  setComment,
   errors,
   isSubmitting,
   isEdit,
@@ -180,6 +184,33 @@ export function IncomeFormFields({
         {errors.amount && (
           <p id="amount-error" className="text-[12px] text-error mt-1">
             {errors.amount}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="income_comment">
+          {t.forms.incomeComment}{' '}
+          <span className="text-text-muted font-normal">({t.forms.incomeCommentHint})</span>
+        </Label>
+        <textarea
+          id="income_comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={3}
+          maxLength={2000}
+          disabled={isSubmitting}
+          aria-invalid={errors.comment ? 'true' : undefined}
+          aria-describedby={errors.comment ? 'income_comment-error' : undefined}
+          className={`w-full min-h-[88px] px-3 py-2 border rounded-lg outline-none transition-colors resize-y ${
+            errors.comment
+              ? 'border-error focus:ring-2 focus:ring-error focus:border-error'
+              : 'border-border focus:ring-2 focus:ring-focusRing focus:border-focusRing'
+          } disabled:bg-background disabled:cursor-not-allowed`}
+        />
+        {errors.comment && (
+          <p id="income_comment-error" className="text-[12px] text-error mt-1">
+            {errors.comment}
           </p>
         )}
       </div>

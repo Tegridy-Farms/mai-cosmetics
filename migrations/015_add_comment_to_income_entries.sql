@@ -1,0 +1,2 @@
+ALTER TABLE income_entries
+  ADD COLUMN IF NOT EXISTS comment VARCHAR(2000);

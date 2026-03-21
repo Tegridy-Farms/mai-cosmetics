@@ -92,7 +92,7 @@ flowchart LR
 
 ## Database schema (source of truth = `migrations/`)
 
-The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 014) to a Postgres database referenced by `DATABASE_URL`.
+The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 015) to a Postgres database referenced by `DATABASE_URL`.
 
 > There is no automated migration runner script in this repo today; migrations are intended to be run manually (or via your deployment/DB tool of choice) in order.
 
@@ -134,6 +134,7 @@ Columns:
 Migrations:
 - [`migrations/003_create_income_entries.sql`](migrations/003_create_income_entries.sql)
 - [`migrations/008_add_customer_to_income.sql`](migrations/008_add_customer_to_income.sql)
+- [`migrations/015_add_comment_to_income_entries.sql`](migrations/015_add_comment_to_income_entries.sql)
 
 Columns:
 - **`id`**: `SERIAL PRIMARY KEY`
@@ -143,6 +144,7 @@ Columns:
 - **`date`**: `DATE NOT NULL`
 - **`duration_minutes`**: `INTEGER NOT NULL CHECK (duration_minutes > 0)`
 - **`amount`**: `NUMERIC(10,2) NOT NULL CHECK (amount > 0)`
+- **`comment`**: `VARCHAR(2000)` nullable (optional note on the session)
 - **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
 
 Indexes:

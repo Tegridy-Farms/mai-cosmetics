@@ -8,7 +8,7 @@ export const GET = withApiHandler(async (_request, { params }) => {
   const id = parseIdParam(params.id);
 
   const result = await sql`
-    SELECT id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, created_at
+    SELECT id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, created_at
     FROM income_entries
     WHERE id = ${id}
   `;
@@ -32,15 +32,15 @@ export const PUT = withApiHandler(async (request, { params }) => {
   const body = await parseJsonBody(request);
   const data = parseSchema(IncomeEntrySchema, body);
 
-  const { service_name, service_type_id, customer_id, date, duration_minutes, amount } = data;
+  const { service_name, service_type_id, customer_id, date, duration_minutes, amount, comment } = data;
 
   const result = await sql`
     UPDATE income_entries
     SET service_name = ${service_name}, service_type_id = ${service_type_id},
         customer_id = ${customer_id ?? null}, date = ${date},
-        duration_minutes = ${duration_minutes}, amount = ${amount}
+        duration_minutes = ${duration_minutes}, amount = ${amount}, comment = ${comment}
     WHERE id = ${id}
-    RETURNING id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, created_at
+    RETURNING id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, created_at
   `;
 
   return json(result.rows[0]);

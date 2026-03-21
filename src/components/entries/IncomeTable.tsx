@@ -15,6 +15,7 @@ interface IncomeTableProps {
 }
 
 const SKELETON_ROWS = 5;
+const COL_COUNT = 7;
 
 export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: IncomeTableProps) {
   const getServiceTypeName = (id: number) =>
@@ -29,6 +30,7 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceType}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.durationMin}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted max-w-[200px]">{t.entries.comment}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.actions}</th>
           </tr>
         </thead>
@@ -36,7 +38,7 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
           {isLoading ? (
             Array.from({ length: SKELETON_ROWS }).map((_, i) => (
               <tr key={i} data-testid="skeleton-row" className="border-b border-border">
-                {Array.from({ length: 6 }).map((_, j) => (
+                {Array.from({ length: COL_COUNT }).map((_, j) => (
                   <td key={j} className="py-3 px-4">
                     <div className="h-4 bg-skeleton rounded animate-pulse" />
                   </td>
@@ -45,7 +47,7 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
             ))
           ) : entries.length === 0 ? (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={COL_COUNT}>
                 <EmptyState
                   title={t.entries.noEntriesMatch}
                   description={t.entries.tryAdjusting}
@@ -63,6 +65,15 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
                 <td className="py-3 px-4 text-text-primary">{entry.duration_minutes}</td>
                 <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {formatAmount(entry.amount)}
+                </td>
+                <td className="py-3 px-4 text-text-secondary max-w-[200px]">
+                  {entry.comment ? (
+                    <span className="line-clamp-2" title={entry.comment}>
+                      {entry.comment}
+                    </span>
+                  ) : (
+                    '—'
+                  )}
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1">

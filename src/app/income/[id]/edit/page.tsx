@@ -54,6 +54,7 @@ export default async function IncomeEditPage({
           date: entry.date,
           duration_minutes: entry.duration_minutes,
           amount: entry.amount,
+          comment: entry.comment ?? undefined,
         }}
       />
     </main>

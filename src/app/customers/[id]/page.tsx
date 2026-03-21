@@ -140,6 +140,7 @@ export default function CustomerDetailPage() {
                   <th className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceName}</th>
                   <th className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceType}</th>
                   <th className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
+                  <th className="py-3 px-4 font-medium text-text-muted max-w-[180px]">{t.entries.comment}</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,6 +153,15 @@ export default function CustomerDetailPage() {
                     </td>
                     <td className="py-3 px-4 text-text-primary text-end font-mono">
                       {formatAmount(entry.amount)}
+                    </td>
+                    <td className="py-3 px-4 text-text-secondary max-w-[180px]">
+                      {entry.comment ? (
+                        <span className="line-clamp-2" title={entry.comment}>
+                          {entry.comment}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                   </tr>
                 ))}

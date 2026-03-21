@@ -115,6 +115,9 @@ export const t = {
     newCustomerPending: 'לקוחה חדשה (תוגדר בהמשך)',
     addCustomerForIncome: '👤 הוספי פרטי הלקוחה החדשה',
     incomeSavedAddCustomer: '✅ ההכנסה נרשמה. כעת הוסיפי את פרטי הלקוחה.',
+    incomeComment: '💬 הערה',
+    incomeCommentHint: 'אופציונלי',
+    incomeCommentTooLong: 'ההערה ארוכה מדי (עד 2000 תווים)',
   },
   entries: {
     date: '📅 תאריך',
@@ -122,6 +125,7 @@ export const t = {
     serviceType: '🏷️ סוג שירות',
     durationMin: '⏱️ משך (דקות)',
     amount: '💰 סכום',
+    comment: '💬 הערה',
     actions: '⚡ פעולות',
     description: '📄 תיאור',
     category: '📂 קטגוריה',

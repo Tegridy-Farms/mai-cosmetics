@@ -97,6 +97,7 @@ export interface IncomeEntry {
   date: string;
   duration_minutes: number;
   amount: number;
+  comment?: string | null;
   created_at: string;
 }
 

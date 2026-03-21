@@ -30,6 +30,7 @@ interface IncomeFormProps {
     date: string;
     duration_minutes: number;
     amount: number;
+    comment?: string | null;
   };
 }
 
@@ -47,6 +48,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
     initialData?.duration_minutes != null ? String(initialData.duration_minutes) : ''
   );
   const [amount, setAmount] = useState(initialData?.amount != null ? String(initialData.amount) : '');
+  const [comment, setComment] = useState(initialData?.comment ?? '');
   const [errors, setErrors] = useState<IncomeFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -57,6 +59,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
     date: string;
     duration_minutes: number;
     amount: number;
+    comment: string | null;
   } | null>(null);
   const { showToast, toasts } = useToast();
   const { effectiveServiceTypes, isLoadingServiceTypes } = useIncomeServiceTypes(serviceTypes ?? []);
@@ -119,6 +122,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
       date,
       duration_minutes: durationMinutes,
       amount,
+      comment: comment.trim() === '' ? undefined : comment,
     };
 
     const result = IncomeFormClientSchema.safeParse(rawData);
@@ -135,6 +139,11 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
       const apiCustomerId =
         customerId && customerId !== NEW_CUSTOMER_VALUE ? Number(customerId) : null;
 
+      const commentPayload =
+        result.data.comment != null && result.data.comment.trim() !== ''
+          ? result.data.comment.trim()
+          : null;
+
       const payload = {
         service_name: result.data.service_name,
         service_type_id: Number(result.data.service_type_id),
@@ -142,6 +151,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
         date: result.data.date,
         duration_minutes: result.data.duration_minutes,
         amount: result.data.amount,
+        comment: commentPayload,
       };
 
       if (isEdit) {
@@ -161,6 +171,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           date: result.data.date,
           duration_minutes: result.data.duration_minutes,
           amount: result.data.amount,
+          comment: commentPayload,
         });
         setShowAddCustomerModal(true);
       } else {
@@ -171,6 +182,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
         setDate(new Date().toISOString().split('T')[0]);
         setDurationMinutes('');
         setAmount('');
+        setComment('');
       }
     } catch (err) {
       if (err instanceof ClientApiError) {
@@ -207,6 +219,8 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           setDurationMinutes={setDurationMinutes}
           amount={amount}
           setAmount={setAmount}
+          comment={comment}
+          setComment={setComment}
           errors={errors}
           isSubmitting={isSubmitting}
           isEdit={isEdit}

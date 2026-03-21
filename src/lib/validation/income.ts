@@ -9,6 +9,10 @@ export const IncomeEntrySchema = z.object({
   date: z.string().regex(dateRegex, 'Date must be in YYYY-MM-DD format'),
   duration_minutes: z.number().int().positive(),
   amount: z.number().positive(),
+  comment: z
+    .union([z.string().max(2000), z.null()])
+    .optional()
+    .transform((v) => (v === undefined || v === null || v === '' ? null : v)),
 });
 
 export const IncomeQuerySchema = z.object({
@@ -35,6 +39,7 @@ export const IncomeFormClientSchema = z.object({
     .min(1, t.forms.amountRequired)
     .transform((s) => Number(s))
     .pipe(z.number().positive(t.forms.amountRequired)),
+  comment: z.string().max(2000, t.forms.incomeCommentTooLong).optional(),
 });
 
 export type IncomeFormClientValues = z.infer<typeof IncomeFormClientSchema>;
