@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { ClientApiError, getJson } from '@/lib/api-client';
 import { t } from '@/lib/translations';
 
 type Report = {
@@ -31,6 +32,16 @@ function metric(value: number | null | undefined, suffix = ''): string {
   return `${value}${suffix}`;
 }
 
+function isAnalyticsReport(json: unknown): json is Report {
+  return (
+    !!json &&
+    typeof json === 'object' &&
+    'summary' in json &&
+    !!(json as Report).summary &&
+    typeof (json as Report).summary.leads_total === 'number'
+  );
+}
+
 export default function MarketingLeadsAnalyticsPage() {
   const [days, setDays] = useState(30);
   const [report, setReport] = useState<Report | null>(null);
@@ -40,25 +51,18 @@ export default function MarketingLeadsAnalyticsPage() {
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
-    fetch(`/api/leads/report?days=${days}`)
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        const json = (await res.json()) as unknown;
-        const looksValid =
-          !!json &&
-          typeof json === 'object' &&
-          'summary' in json &&
-          !!(json as any).summary &&
-          typeof (json as any).summary.leads_total === 'number';
-        if (!looksValid) throw new Error('Unexpected response');
-        setReport(json as Report);
+    getJson<unknown>(`/api/leads/report?days=${days}`)
+      .then((json) => {
+        if (!isAnalyticsReport(json)) throw new Error('Unexpected response');
+        setReport(json);
       })
-      .catch(() => {
+      .catch((e) => {
         setReport(null);
-        setLoadError(t.toast.couldNotLoad);
+        if (e instanceof ClientApiError) {
+          setLoadError(e.body.error || t.toast.couldNotLoad);
+        } else {
+          setLoadError(t.toast.couldNotLoad);
+        }
       })
       .finally(() => setLoading(false));
   }, [days]);

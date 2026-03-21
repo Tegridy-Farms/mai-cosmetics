@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation';
 import { IncomeForm } from '@/components/forms/IncomeForm';
+import { serverFetch } from '@/lib/server-fetch';
 import { t } from '@/lib/translations';
 import type { IncomeEntry, ServiceType } from '@/types';
 
 async function getIncomeEntry(id: number): Promise<IncomeEntry | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/income/${id}`, { cache: 'no-store' });
+    const res = await serverFetch(`/api/income/${id}`);
     if (!res.ok) return null;
-    return res.json();
+    return await res.json();
   } catch {
     return null;
   }
@@ -16,8 +16,7 @@ async function getIncomeEntry(id: number): Promise<IncomeEntry | null> {
 
 async function getServiceTypes(): Promise<ServiceType[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/service-types`, { cache: 'no-store' });
+    const res = await serverFetch('/api/service-types');
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

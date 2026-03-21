@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db';
+import { withApiHandlerNoParams } from '@/lib/http';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,10 +11,10 @@ function escapeCsv(value: string): string {
   return str;
 }
 
-export async function GET(): Promise<Response> {
+export const GET = withApiHandlerNoParams(async () => {
   const result = await sql`
     SELECT
-      i.date,
+      i.date::text AS date,
       i.service_name,
       st.name AS service_type_name,
       i.duration_minutes,
@@ -52,4 +53,4 @@ export async function GET(): Promise<Response> {
       'Content-Disposition': `attachment; filename="mai-cosmetics-income-${today}.csv"`,
     },
   });
-}
+});

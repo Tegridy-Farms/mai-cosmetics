@@ -2,6 +2,7 @@ import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { ServiceTypeTable } from "@/components/dashboard/ServiceTypeTable";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { EmptyState } from "@/components/ui/empty-state";
+import { serverFetch } from "@/lib/server-fetch";
 import { t } from "@/lib/translations";
 import type { DashboardMetrics, MonthlyTrend } from "@/types";
 
@@ -15,11 +16,7 @@ const emptyMetrics: DashboardMetrics = {
 
 async function fetchTrendData(): Promise<MonthlyTrend[]> {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/dashboard/trend`, {
-      cache: "no-store",
-    });
+    const res = await serverFetch("/api/dashboard/trend");
     if (!res.ok) return [];
     const json = await res.json();
     return (json.months ?? []) as MonthlyTrend[];
@@ -30,11 +27,7 @@ async function fetchTrendData(): Promise<MonthlyTrend[]> {
 
 async function fetchMetrics(period: "month" | "all"): Promise<DashboardMetrics> {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/dashboard?period=${period}`, {
-      cache: "no-store",
-    });
+    const res = await serverFetch(`/api/dashboard?period=${period}`);
     if (!res.ok) return emptyMetrics;
     return (await res.json()) as DashboardMetrics;
   } catch {

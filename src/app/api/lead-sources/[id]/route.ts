@@ -1,88 +1,54 @@
 import { sql } from '@/lib/db';
+import { ApiError, json, parseIdParam, parseJsonBody, parseSchema, withApiHandler } from '@/lib/http';
 import { LeadSourceSchema } from '@/lib/schemas';
+import { API_ERROR_CODES } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
 
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const GET = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const result = await sql`
     SELECT id, name, sort_order, created_at FROM lead_sources WHERE id = ${id}
   `;
 
   if (result.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  return jsonResponse(result.rows[0]);
-}
+  return json(result.rows[0]);
+});
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const PUT = withApiHandler(async (request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM lead_sources WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  try {
-    const body = await request.json();
-    const parsed = LeadSourceSchema.safeParse(body);
+  const body = await parseJsonBody(request);
+  const data = parseSchema(LeadSourceSchema, body);
 
-    if (!parsed.success) {
-      return jsonResponse({ error: 'Validation failed', details: parsed.error.issues }, 400);
-    }
+  const { name, sort_order } = data;
 
-    const { name, sort_order } = parsed.data;
+  const result = await sql`
+    UPDATE lead_sources SET name = ${name}, sort_order = ${sort_order ?? 0}
+    WHERE id = ${id}
+    RETURNING id, name, sort_order, created_at
+  `;
 
-    const result = await sql`
-      UPDATE lead_sources SET name = ${name}, sort_order = ${sort_order ?? 0}
-      WHERE id = ${id}
-      RETURNING id, name, sort_order, created_at
-    `;
+  return json(result.rows[0]);
+});
 
-    return jsonResponse(result.rows[0]);
-  } catch {
-    return jsonResponse({ error: 'Internal server error' }, 500);
-  }
-}
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const DELETE = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM lead_sources WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
   const inUse = await sql`
@@ -90,13 +56,12 @@ export async function DELETE(
   `;
 
   if (inUse.rows.length > 0) {
-    return jsonResponse(
-      { error: 'Cannot delete: lead source is in use by customers', code: 'IN_USE' },
-      409
-    );
+    throw new ApiError(409, 'Cannot delete: lead source is in use by customers', {
+      code: API_ERROR_CODES.IN_USE,
+    });
   }
 
   await sql`DELETE FROM lead_sources WHERE id = ${id}`;
 
   return new Response(null, { status: 204 });
-}
+});

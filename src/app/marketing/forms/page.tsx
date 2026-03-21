@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { DeleteConfirmDialog } from '@/components/entries/DeleteConfirmDialog';
 import { FormsTable } from '@/components/forms/FormsTable';
+import { ClientApiError, deleteJson, getJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign, Form } from '@/types';
 
@@ -21,11 +23,18 @@ export default function MarketingFormsPage() {
   const fetchAll = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [formsRes, campaignsRes] = await Promise.all([fetch('/api/forms'), fetch('/api/campaigns')]);
-      setForms(await formsRes.json());
-      setCampaigns(await campaignsRes.json());
-    } catch {
-      showToast(t.toast.couldNotLoad, 'error');
+      const [formsData, campaignsData] = await Promise.all([
+        getJson<Form[]>('/api/forms'),
+        getJson<Campaign[]>('/api/campaigns'),
+      ]);
+      setForms(formsData);
+      setCampaigns(campaignsData);
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotLoad, 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,14 +64,14 @@ export default function MarketingFormsPage() {
     if (deleteId === null) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/forms/${deleteId}`, { method: 'DELETE' });
-      if (res.ok) {
-        await fetchAll();
+      await deleteJson(`/api/forms/${deleteId}`);
+      await fetchAll();
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
       } else {
         showToast(t.toast.couldNotDelete, 'error');
       }
-    } catch {
-      showToast(t.toast.couldNotDelete, 'error');
     } finally {
       setDeleteId(null);
       setIsDeleting(false);

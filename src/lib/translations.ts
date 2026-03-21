@@ -147,6 +147,15 @@ export const t = {
     consumables: '🧴 מתכלים',
     other: '📌 אחר',
   },
+  api: {
+    errors: {
+      validationFailed: 'נא לתקן את השדות המסומנים.',
+      inUse: 'לא ניתן למחוק: הרשומה בשימוש.',
+      duplicate: 'רשומה כזו כבר קיימת.',
+      constraint: 'הפעולה נחסמה בגלל קשר לרשומות אחרות.',
+      tooManyRequests: 'יותר מדי בקשות. נסי שוב בעוד רגע.',
+    },
+  },
   toast: {
     saved: 'נשמר',
     couldNotSave: 'לא ניתן לשמור. נסי שוב.',

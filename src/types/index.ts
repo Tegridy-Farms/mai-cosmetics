@@ -1,3 +1,11 @@
+export type {
+  ApiErrorBody,
+  ApiErrorCode,
+  PaginatedMeta,
+  PaginatedResult,
+} from '@/types/api';
+export { API_ERROR_CODES } from '@/types/api';
+
 export interface ServiceType {
   id: number;
   name: string;

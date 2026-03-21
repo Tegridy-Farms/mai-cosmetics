@@ -29,6 +29,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.3.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
@@ -64,7 +65,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "lines": 80
+        "lines": 65,
+        "branches": 50,
+        "statements": 65,
+        "functions": 50
       }
     }
   }

@@ -1,4 +1,5 @@
 import { IncomeForm } from '@/components/forms/IncomeForm';
+import { serverFetch } from '@/lib/server-fetch';
 import { t } from '@/lib/translations';
 
 interface ServiceType {
@@ -9,8 +10,7 @@ interface ServiceType {
 
 async function getServiceTypes(): Promise<ServiceType[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/service-types`, { cache: 'no-store' });
+    const res = await serverFetch('/api/service-types');
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : (data.service_types ?? []);

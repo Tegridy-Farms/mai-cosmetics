@@ -4,6 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { CampaignForm } from '@/components/forms/CampaignForm';
+import { ClientApiError, postJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 
 export default function NewMarketingCampaignPage() {
@@ -12,16 +14,15 @@ export default function NewMarketingCampaignPage() {
 
   async function onSave(data: Record<string, unknown>) {
     try {
-      const res = await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('failed');
+      await postJson('/api/campaigns', data);
       showToast(t.campaigns.saved, 'success');
       router.push('/marketing/campaigns');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     }
   }
 

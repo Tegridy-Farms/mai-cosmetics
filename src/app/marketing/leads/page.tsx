@@ -8,6 +8,8 @@ import { Select } from '@/components/ui/select';
 import { Pagination } from '@/components/entries/Pagination';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { LeadsTable, type LeadListRow } from '@/components/leads/LeadsTable';
+import { ClientApiError, getJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { LeadStage } from '@/types';
 
@@ -43,12 +45,15 @@ export default function MarketingLeadsPage() {
   const fetchLeads = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/leads?${queryString}`);
-      const json = (await res.json()) as LeadsResponse;
+      const json = await getJson<LeadsResponse>(`/api/leads?${queryString}`);
       setRows(json.data ?? []);
       setTotal(json.total ?? 0);
-    } catch {
-      showToast(t.toast.couldNotLoad, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotLoad, 'error');
+      }
     } finally {
       setIsLoading(false);
     }

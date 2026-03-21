@@ -36,8 +36,11 @@ Open `http://localhost:3000` → you will be redirected to `/login` until you au
 | **API routes** | [`src/app/api/`](src/app/api/) | REST-style endpoints (`income`, `expenses`, `customers`, …) |
 | **Auth gate** | [`src/middleware.ts`](src/middleware.ts) | Redirect-to-login enforcement for all non-allowed paths |
 | **DB access** | [`src/lib/db.ts`](src/lib/db.ts) | `sql` / `query()` wrapper around Vercel Postgres |
-| **Validation** | [`src/lib/schemas.ts`](src/lib/schemas.ts) | Zod schemas for request bodies + query params |
-| **Domain types** | [`src/types/index.ts`](src/types/index.ts) | TypeScript interfaces matching DB rows / API payloads |
+| **HTTP helpers** | [`src/lib/http/`](src/lib/http/) | `withApiHandler`, `json`, `ApiError`, `parseJsonBody`, `parseSchema`, Postgres error mapping |
+| **Server → own API** | [`src/lib/server-fetch.ts`](src/lib/server-fetch.ts) | RSC-only `serverFetch`: forwards `Cookie` + correct origin for middleware-protected `/api/*`. Client pages use `fetch('/api/...')` (browser sends cookies). |
+| **Validation** | [`src/lib/validation/`](src/lib/validation/) | Zod schemas by domain (barrel: [`src/lib/schemas.ts`](src/lib/schemas.ts)) |
+| **API client (browser)** | [`src/lib/api-client.ts`](src/lib/api-client.ts), [`src/lib/api-error-toast.ts`](src/lib/api-error-toast.ts) | Typed `fetch` + Hebrew toasts for `409` / `429` / validation |
+| **Domain types** | [`src/types/index.ts`](src/types/index.ts), [`src/types/api.ts`](src/types/api.ts) | Row/payload interfaces + shared API error / pagination types |
 | **Business calculations** | [`src/lib/calculations.ts`](src/lib/calculations.ts) | Dashboard aggregates and trend logic |
 | **Translations** | [`src/lib/translations.ts`](src/lib/translations.ts) | All user-visible Hebrew strings (source of truth) |
 | **Navigation** | [`src/components/NavigationBar.tsx`](src/components/NavigationBar.tsx) | Sidebar/mobile nav; add/remove top-level sections |
@@ -222,21 +225,23 @@ Purpose: audit/timeline for a lead (stage changes, notes, contact attempts, conv
 Any change that touches data must be reflected in **three places**:
 
 1. **DB**: new migration(s) in [`migrations/`](migrations/)
-2. **Validation**: Zod schema(s) in [`src/lib/schemas.ts`](src/lib/schemas.ts)
+2. **Validation**: Zod schema(s) in [`src/lib/validation/`](src/lib/validation/) (re-exported from [`src/lib/schemas.ts`](src/lib/schemas.ts) for compatibility)
 3. **Types/UI**: TS interfaces in [`src/types/index.ts`](src/types/index.ts) + forms/tables
 
 Example: changing expense categories requires a DB constraint migration, Zod enum update, and TS union + UI option updates.
 
 ## API logic (backend) — patterns and endpoints
 
-API routes live in [`src/app/api/`](src/app/api/). Each route:
+API routes live in [`src/app/api/`](src/app/api/). Handlers are wrapped with [`withApiHandler`](src/lib/http/with-api-handler.ts) / [`withApiHandlerNoParams`](src/lib/http/with-api-handler.ts) so thrown [`ApiError`](src/lib/http/api-error.ts) and unexpected errors become consistent JSON responses (with `console.error` in development for unknown errors).
 
-- Validates input with `safeParse()` from [`src/lib/schemas.ts`](src/lib/schemas.ts).
-- Returns JSON:
-  - Validation errors: `400 { error, details }`
-  - Not found: `404 { error }`
-  - “In use” protection: `409 { error, code: 'IN_USE' }` (see below)
-- Uses SQL via [`src/lib/db.ts`](src/lib/db.ts) (`sql` tagged template).
+- Validates bodies with [`parseJsonBody`](src/lib/http/parse-body.ts) + [`parseSchema`](src/lib/http/zod.ts) (or query strings with [`parseSearchParams`](src/lib/http/zod.ts)) using Zod from [`src/lib/validation/`](src/lib/validation/).
+- Returns JSON via [`json()`](src/lib/http/json.ts).
+- **Error shape** (non-2xx): `{ error: string, code?: string, details?: ZodIssue[] }`
+  - Validation: `400 { error: 'Validation failed' | 'Invalid query parameters' | …, details }`
+  - Not found: `404 { error: 'Not found' }` (via `throw new ApiError(404, …)`)
+  - In use: `409 { error, code: 'IN_USE' }`
+  - Unique / FK violations from Postgres may map to `409 { code: 'DUPLICATE' | 'CONSTRAINT' }` via [`mapPostgresError`](src/lib/http/postgres.ts)
+- Uses SQL via [`src/lib/db.ts`](src/lib/db.ts) (`sql` tagged template). Optional string fields that confuse the tagged template are passed through [`asSqlString`](src/lib/sql-primitive.ts) where needed.
 
 ### Dashboard
 
@@ -282,6 +287,8 @@ API routes live in [`src/app/api/`](src/app/api/). Each route:
 - **GET/POST** `/api/lead-sources` → [`src/app/api/lead-sources/route.ts`](src/app/api/lead-sources/route.ts)
 - **GET/PUT/DELETE** `/api/lead-sources/:id` → [`src/app/api/lead-sources/[id]/route.ts`](src/app/api/lead-sources/[id]/route.ts)
   - Delete protection: cannot delete if referenced by `customers` → `409 IN_USE`
+
+**Marketing UI** ([`src/app/marketing/`](src/app/marketing/)): all authenticated `/api/*` traffic goes through [`src/lib/api-client.ts`](src/lib/api-client.ts) (`getJson` / `postJson` / `putJson` / `deleteJson`) with [`showToastForClientApiError`](src/lib/api-error-toast.ts) on failure—no raw `fetch` in that tree.
 
 ### Campaigns (marketing)
 
@@ -455,7 +462,7 @@ If you add a new screen/CTA/table column, add the translation key first, then us
 
 1. **DB**: add migration(s) in [`migrations/`](migrations/) (next numeric prefix) with table(s), indexes, constraints.
 2. **Types**: add interfaces to [`src/types/index.ts`](src/types/index.ts).
-3. **Validation**: add Zod schemas to [`src/lib/schemas.ts`](src/lib/schemas.ts).
+3. **Validation**: add Zod schemas under [`src/lib/validation/`](src/lib/validation/) and export from [`src/lib/validation/index.ts`](src/lib/validation/index.ts) (still available via [`src/lib/schemas.ts`](src/lib/schemas.ts)).
 4. **API**: create `src/app/api/inventory/route.ts` (+ `[id]/route.ts` if CRUD).
 5. **UI routes**: create `src/app/inventory/page.tsx` (+ `new/page.tsx`, `[id]/edit/page.tsx`).
 6. **UI components**: add forms under [`src/components/forms/`](src/components/forms/) and list/table under [`src/components/entries/`](src/components/entries/) (or a new folder if it’s big).
@@ -474,7 +481,7 @@ If you add a new screen/CTA/table column, add the translation key first, then us
 This requires coordinating **DB + validation + UI**:
 
 1. **DB**: add a new migration to update the `expense_entries.category` constraint (or switch to a lookup table).
-2. **Zod**: update `ExpenseEntrySchema` enum in [`src/lib/schemas.ts`](src/lib/schemas.ts).
+2. **Zod**: update `ExpenseEntrySchema` enum in [`src/lib/validation/expenses.ts`](src/lib/validation/expenses.ts).
 3. **Types**: update `ExpenseEntry['category']` union in [`src/types/index.ts`](src/types/index.ts).
 4. **UI**: update the category select in [`src/components/forms/ExpenseForm.tsx`](src/components/forms/ExpenseForm.tsx) and any filter UI that lists categories.
 5. **Translations**: add/adjust labels in [`src/lib/translations.ts`](src/lib/translations.ts).
@@ -482,7 +489,7 @@ This requires coordinating **DB + validation + UI**:
 ### Add a new customer field (example: birthday)
 
 1. **Migration**: add `birthday DATE` (plus index if needed).
-2. **Validation**: add to `CustomerSchema` in [`src/lib/schemas.ts`](src/lib/schemas.ts).
+2. **Validation**: add to `CustomerSchema` in [`src/lib/validation/customers.ts`](src/lib/validation/customers.ts).
 3. **Types**: add to `Customer` in [`src/types/index.ts`](src/types/index.ts).
 4. **API**: update `INSERT/SELECT/UPDATE` column lists in:
    - [`src/app/api/customers/route.ts`](src/app/api/customers/route.ts)
@@ -499,5 +506,5 @@ This requires coordinating **DB + validation + UI**:
 
 ## Testing and deployment
 
-- Tests: Jest is configured in [`package.json`](package.json) (`**/tests/**/*.test.ts(x)`), but there is no `tests/` directory in the repo yet.
+- Tests: Jest is configured in [`package.json`](package.json) (`**/tests/**/*.test.ts(x)`). Baseline suites live under [`tests/`](tests/) (HTTP helpers, Zod field-error mapping, API toast mapping). Global coverage thresholds are set in `package.json` (raise them as you add tests).
 - Deployment: Vercel expects `DATABASE_URL` + `ADMIN_PASSWORD`. [`vercel.json`](vercel.json) declares `framework: nextjs`.

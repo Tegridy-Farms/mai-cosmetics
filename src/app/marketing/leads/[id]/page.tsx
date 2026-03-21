@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useToast, ToastContainer } from '@/components/ui/toast';
+import { ClientApiError, getJson, postJson, putJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { LeadEvent, LeadStage } from '@/types';
 
@@ -52,19 +54,36 @@ export default function MarketingLeadDetailPage() {
 
   useEffect(() => {
     if (isNaN(id)) return;
-    Promise.all([fetch(`/api/leads/${id}`), fetch(`/api/leads/${id}/events`)])
-      .then(async ([l, e]) => {
-        if (!l.ok) {
-          if (l.status === 404) router.push('/marketing/leads');
-          throw new Error('not ok');
+    let cancelled = false;
+    (async () => {
+      try {
+        const [leadJson, evs] = await Promise.all([
+          getJson<LeadDetail>(`/api/leads/${id}`),
+          getJson<LeadEvent[]>(`/api/leads/${id}/events`),
+        ]);
+        if (!cancelled) {
+          setLead(leadJson);
+          setStage(leadJson.stage);
+          setEvents(evs);
         }
-        const leadJson = (await l.json()) as LeadDetail;
-        setLead(leadJson);
-        setStage(leadJson.stage);
-        setEvents(await e.json());
-      })
-      .catch(() => showToast(t.toast.couldNotLoad, 'error'))
-      .finally(() => setIsLoading(false));
+      } catch (e) {
+        if (cancelled) return;
+        if (e instanceof ClientApiError && e.status === 404) {
+          router.push('/marketing/leads');
+          return;
+        }
+        if (e instanceof ClientApiError) {
+          showToastForClientApiError(e, showToast);
+        } else {
+          showToast(t.toast.couldNotLoad, 'error');
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id, router, showToast]);
 
   const attributionText = useMemo(() => {
@@ -80,19 +99,20 @@ export default function MarketingLeadDetailPage() {
     if (!lead) return;
     setSavingStage(true);
     try {
-      const res = await fetch(`/api/leads/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage }),
-      });
-      if (!res.ok) throw new Error('failed');
-      const updated = (await res.json()) as LeadDetail;
-      setLead(updated);
-      const evRes = await fetch(`/api/leads/${id}/events`);
-      setEvents(await evRes.json());
+      await putJson(`/api/leads/${id}`, { stage });
+      const [updatedLead, evs] = await Promise.all([
+        getJson<LeadDetail>(`/api/leads/${id}`),
+        getJson<LeadEvent[]>(`/api/leads/${id}/events`),
+      ]);
+      setLead(updatedLead);
+      setEvents(evs);
       showToast(t.toast.saved, 'success');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     } finally {
       setSavingStage(false);
     }
@@ -102,18 +122,16 @@ export default function MarketingLeadDetailPage() {
     if (!note.trim()) return;
     setSavingNote(true);
     try {
-      const res = await fetch(`/api/leads/${id}/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'note', payload: { text: note.trim() } }),
-      });
-      if (!res.ok) throw new Error('failed');
+      await postJson(`/api/leads/${id}/events`, { type: 'note', payload: { text: note.trim() } });
       setNote('');
-      const evRes = await fetch(`/api/leads/${id}/events`);
-      setEvents(await evRes.json());
+      setEvents(await getJson<LeadEvent[]>(`/api/leads/${id}/events`));
       showToast(t.leads.noteSaved, 'success');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     } finally {
       setSavingNote(false);
     }
@@ -123,19 +141,23 @@ export default function MarketingLeadDetailPage() {
     if (!lead) return;
     setConverting(true);
     try {
-      const res = await fetch(`/api/leads/${id}/convert`, { method: 'POST' });
-      if (!res.ok) throw new Error('failed');
-      const json = await res.json();
-      const leadRes = await fetch(`/api/leads/${id}`);
-      setLead(await leadRes.json());
-      const evRes = await fetch(`/api/leads/${id}/events`);
-      setEvents(await evRes.json());
+      const json = await postJson<{ customer_id?: number }>(`/api/leads/${id}/convert`, {});
+      const [updatedLead, evs] = await Promise.all([
+        getJson<LeadDetail>(`/api/leads/${id}`),
+        getJson<LeadEvent[]>(`/api/leads/${id}/events`),
+      ]);
+      setLead(updatedLead);
+      setEvents(evs);
       showToast(t.toast.saved, 'success');
       if (json?.customer_id) {
         router.push(`/customers/${json.customer_id}`);
       }
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     } finally {
       setConverting(false);
     }

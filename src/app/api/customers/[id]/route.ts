@@ -1,25 +1,13 @@
 import { sql } from '@/lib/db';
+import { ApiError, json, parseIdParam, parseJsonBody, parseSchema, withApiHandler } from '@/lib/http';
+import { asSqlString } from '@/lib/sql-primitive';
 import { CustomerSchema } from '@/lib/schemas';
-import type { Customer } from '@/types';
+import { API_ERROR_CODES } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
 
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const GET = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const result = await sql`
     SELECT
@@ -33,72 +21,50 @@ export async function GET(
   `;
 
   if (result.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  return jsonResponse(result.rows[0]);
-}
+  return json(result.rows[0]);
+});
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const PUT = withApiHandler(async (request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM customers WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  try {
-    const body = await request.json();
-    const parsed = CustomerSchema.safeParse(body);
+  const body = await parseJsonBody(request);
+  const parsed = parseSchema(CustomerSchema, body);
 
-    if (!parsed.success) {
-      return jsonResponse({ error: 'Validation failed', details: parsed.error.issues }, 400);
-    }
+  const { first_name, last_name, phone, email, lead_source_id, questionnaire_data } = parsed;
 
-    const { first_name, last_name, phone, email, lead_source_id, questionnaire_data } = parsed.data;
+  const result = await sql`
+    UPDATE customers
+    SET
+      first_name = ${first_name},
+      last_name = ${last_name},
+      phone = ${asSqlString(phone)},
+      email = ${asSqlString(email)},
+      lead_source_id = ${lead_source_id ?? null},
+      questionnaire_data = ${JSON.stringify(questionnaire_data ?? {})}::jsonb,
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING id, first_name, last_name, phone, email, lead_source_id, questionnaire_data, created_at, updated_at
+  `;
 
-    const result = await sql`
-      UPDATE customers
-      SET
-        first_name = ${first_name},
-        last_name = ${last_name},
-        phone = ${phone ?? null},
-        email = ${email ?? null},
-        lead_source_id = ${lead_source_id ?? null},
-        questionnaire_data = ${JSON.stringify(questionnaire_data ?? {})}::jsonb,
-        updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING id, first_name, last_name, phone, email, lead_source_id, questionnaire_data, created_at, updated_at
-    `;
+  return json(result.rows[0]);
+});
 
-    return jsonResponse(result.rows[0]);
-  } catch {
-    return jsonResponse({ error: 'Internal server error' }, 500);
-  }
-}
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const DELETE = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM customers WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
   const inUse = await sql`
@@ -106,13 +72,12 @@ export async function DELETE(
   `;
 
   if (inUse.rows.length > 0) {
-    return jsonResponse(
-      { error: 'Cannot delete: customer has linked income entries', code: 'IN_USE' },
-      409
-    );
+    throw new ApiError(409, 'Cannot delete: customer has linked income entries', {
+      code: API_ERROR_CODES.IN_USE,
+    });
   }
 
   await sql`DELETE FROM customers WHERE id = ${id}`;
 
   return new Response(null, { status: 204 });
-}
+});

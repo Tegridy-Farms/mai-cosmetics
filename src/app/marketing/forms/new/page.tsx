@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { AdminFormForm } from '@/components/forms/AdminFormForm';
+import { ClientApiError, getJson, postJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign } from '@/types';
 
@@ -13,24 +15,27 @@ export default function NewMarketingFormPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
   useEffect(() => {
-    fetch('/api/campaigns')
-      .then((res) => res.json())
+    getJson<Campaign[]>('/api/campaigns')
       .then(setCampaigns)
-      .catch(() => setCampaigns([]));
-  }, []);
+      .catch((e) => {
+        setCampaigns([]);
+        if (e instanceof ClientApiError) {
+          showToastForClientApiError(e, showToast);
+        }
+      });
+  }, [showToast]);
 
   async function onSave(data: Record<string, unknown>) {
     try {
-      const res = await fetch('/api/forms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('failed');
+      await postJson('/api/forms', data);
       showToast(t.toast.saved, 'success');
       router.push('/marketing/forms');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     }
   }
 

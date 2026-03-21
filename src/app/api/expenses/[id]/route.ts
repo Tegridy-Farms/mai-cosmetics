@@ -1,24 +1,11 @@
 import { sql } from '@/lib/db';
+import { ApiError, json, parseIdParam, parseJsonBody, parseSchema, withApiHandler } from '@/lib/http';
 import { ExpenseEntrySchema } from '@/lib/schemas';
 
 export const dynamic = 'force-dynamic';
 
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-export async function GET(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const GET = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const result = await sql`
     SELECT id, description, category, date, amount, created_at
@@ -27,68 +14,46 @@ export async function GET(
   `;
 
   if (result.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  return jsonResponse(result.rows[0]);
-}
+  return json(result.rows[0]);
+});
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const PUT = withApiHandler(async (request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM expense_entries WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
-  try {
-    const body = await request.json();
-    const parsed = ExpenseEntrySchema.safeParse(body);
+  const body = await parseJsonBody(request);
+  const data = parseSchema(ExpenseEntrySchema, body);
 
-    if (!parsed.success) {
-      return jsonResponse({ error: 'Validation failed', details: parsed.error.issues }, 400);
-    }
+  const { description, category, date, amount } = data;
 
-    const { description, category, date, amount } = parsed.data;
+  const result = await sql`
+    UPDATE expense_entries
+    SET description = ${description}, category = ${category}, date = ${date}, amount = ${amount}
+    WHERE id = ${id}
+    RETURNING id, description, category, date, amount, created_at
+  `;
 
-    const result = await sql`
-      UPDATE expense_entries
-      SET description = ${description}, category = ${category}, date = ${date}, amount = ${amount}
-      WHERE id = ${id}
-      RETURNING id, description, category, date, amount, created_at
-    `;
+  return json(result.rows[0]);
+});
 
-    return jsonResponse(result.rows[0]);
-  } catch {
-    return jsonResponse({ error: 'Internal server error' }, 500);
-  }
-}
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
-): Promise<Response> {
-  const id = parseInt(params.id, 10);
-
-  if (isNaN(id)) {
-    return jsonResponse({ error: 'Invalid id' }, 400);
-  }
+export const DELETE = withApiHandler(async (_request, { params }) => {
+  const id = parseIdParam(params.id);
 
   const existing = await sql`SELECT id FROM expense_entries WHERE id = ${id}`;
 
   if (existing.rows.length === 0) {
-    return jsonResponse({ error: 'Not found' }, 404);
+    throw new ApiError(404, 'Not found');
   }
 
   await sql`DELETE FROM expense_entries WHERE id = ${id}`;
 
   return new Response(null, { status: 204 });
-}
+});

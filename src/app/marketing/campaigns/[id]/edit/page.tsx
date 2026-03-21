@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { CampaignForm } from '@/components/forms/CampaignForm';
+import { ClientApiError, getJson, putJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign } from '@/types';
 
@@ -17,27 +19,43 @@ export default function EditMarketingCampaignPage() {
 
   useEffect(() => {
     if (isNaN(id)) return;
-    fetch(`/api/campaigns/${id}`)
-      .then(async (res) => {
-        if (!res.ok) throw new Error('not ok');
-        setCampaign(await res.json());
-      })
-      .catch(() => router.push('/marketing/campaigns'))
-      .finally(() => setIsLoading(false));
-  }, [id, router]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getJson<Campaign>(`/api/campaigns/${id}`);
+        if (!cancelled) setCampaign(data);
+      } catch (e) {
+        if (cancelled) return;
+        if (e instanceof ClientApiError && e.status === 404) {
+          router.push('/marketing/campaigns');
+          return;
+        }
+        if (e instanceof ClientApiError) {
+          showToastForClientApiError(e, showToast);
+        } else {
+          showToast(t.toast.couldNotLoad, 'error');
+        }
+        router.push('/marketing/campaigns');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router, showToast]);
 
   async function onSave(data: Record<string, unknown>) {
     try {
-      const res = await fetch(`/api/campaigns/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('failed');
+      await putJson(`/api/campaigns/${id}`, data);
       showToast(t.campaigns.saved, 'success');
       router.push('/marketing/campaigns');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     }
   }
 

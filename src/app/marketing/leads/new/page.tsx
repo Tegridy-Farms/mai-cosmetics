@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { LeadManualForm } from '@/components/forms/LeadManualForm';
+import { ClientApiError, getJson, postJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign, Form } from '@/types';
 
@@ -14,28 +16,30 @@ export default function NewMarketingLeadPage() {
   const [forms, setForms] = useState<Form[]>([]);
 
   useEffect(() => {
-    Promise.all([fetch('/api/campaigns'), fetch('/api/forms')])
-      .then(async ([c, f]) => {
-        setCampaigns(await c.json());
-        setForms(await f.json());
+    Promise.all([getJson<Campaign[]>('/api/campaigns'), getJson<Form[]>('/api/forms')])
+      .then(([c, f]) => {
+        setCampaigns(c);
+        setForms(f);
       })
-      .catch(() => {
+      .catch((e) => {
         setCampaigns([]);
         setForms([]);
+        if (e instanceof ClientApiError) {
+          showToastForClientApiError(e, showToast);
+        }
       });
-  }, []);
+  }, [showToast]);
 
   async function onSave(data: Record<string, unknown>) {
     try {
-      const res = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('failed');
+      await postJson('/api/leads', data);
       router.push('/marketing/leads');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     }
   }
 

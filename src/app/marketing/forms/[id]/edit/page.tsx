@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { AdminFormForm } from '@/components/forms/AdminFormForm';
+import { ClientApiError, getJson, putJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign, Form } from '@/types';
 
@@ -19,15 +21,37 @@ export default function EditMarketingFormPage() {
 
   useEffect(() => {
     if (isNaN(id)) return;
-    Promise.all([fetch(`/api/forms/${id}`), fetch('/api/campaigns')])
-      .then(async ([formRes, campRes]) => {
-        if (!formRes.ok) throw new Error('not ok');
-        setForm(await formRes.json());
-        setCampaigns(await campRes.json());
-      })
-      .catch(() => router.push('/marketing/forms'))
-      .finally(() => setIsLoading(false));
-  }, [id, router]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const [formData, campaignsData] = await Promise.all([
+          getJson<Form>(`/api/forms/${id}`),
+          getJson<Campaign[]>('/api/campaigns'),
+        ]);
+        if (!cancelled) {
+          setForm(formData);
+          setCampaigns(campaignsData);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        if (e instanceof ClientApiError && e.status === 404) {
+          router.push('/marketing/forms');
+          return;
+        }
+        if (e instanceof ClientApiError) {
+          showToastForClientApiError(e, showToast);
+        } else {
+          showToast(t.toast.couldNotLoad, 'error');
+        }
+        router.push('/marketing/forms');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router, showToast]);
 
   const publicUrl = useMemo(() => {
     if (!form) return '';
@@ -47,16 +71,15 @@ export default function EditMarketingFormPage() {
 
   async function onSave(data: Record<string, unknown>) {
     try {
-      const res = await fetch(`/api/forms/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('failed');
+      await putJson(`/api/forms/${id}`, data);
       showToast(t.toast.saved, 'success');
       router.push('/marketing/forms');
-    } catch {
-      showToast(t.toast.couldNotSave, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotSave, 'error');
+      }
     }
   }
 

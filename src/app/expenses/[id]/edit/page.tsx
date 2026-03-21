@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation';
 import { ExpenseForm } from '@/components/forms/ExpenseForm';
+import { serverFetch } from '@/lib/server-fetch';
 import { t } from '@/lib/translations';
 import type { ExpenseEntry } from '@/types';
 
 async function getExpenseEntry(id: number): Promise<ExpenseEntry | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/expenses/${id}`, { cache: 'no-store' });
+    const res = await serverFetch(`/api/expenses/${id}`);
     if (!res.ok) return null;
-    return res.json();
+    return await res.json();
   } catch {
     return null;
   }

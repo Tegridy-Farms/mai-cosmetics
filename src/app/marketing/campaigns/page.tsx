@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { DeleteConfirmDialog } from '@/components/entries/DeleteConfirmDialog';
 import { CampaignsTable } from '@/components/campaigns/CampaignsTable';
+import { ClientApiError, deleteJson, getJson } from '@/lib/api-client';
+import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import type { Campaign } from '@/types';
 
@@ -20,11 +22,14 @@ export default function MarketingCampaignsPage() {
   const fetchCampaigns = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/campaigns');
-      const data = await res.json();
+      const data = await getJson<Campaign[]>('/api/campaigns');
       setCampaigns(data);
-    } catch {
-      showToast(t.toast.couldNotLoad, 'error');
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
+      } else {
+        showToast(t.toast.couldNotLoad, 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -44,14 +49,14 @@ export default function MarketingCampaignsPage() {
     if (deleteId === null) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/campaigns/${deleteId}`, { method: 'DELETE' });
-      if (res.ok) {
-        await fetchCampaigns();
+      await deleteJson(`/api/campaigns/${deleteId}`);
+      await fetchCampaigns();
+    } catch (e) {
+      if (e instanceof ClientApiError) {
+        showToastForClientApiError(e, showToast);
       } else {
         showToast(t.toast.couldNotDelete, 'error');
       }
-    } catch {
-      showToast(t.toast.couldNotDelete, 'error');
     } finally {
       setDeleteId(null);
       setIsDeleting(false);
