@@ -46,6 +46,7 @@ Open `http://localhost:3000` → you will be redirected to `/login` until you au
 | **Navigation** | [`src/components/NavigationBar.tsx`](src/components/NavigationBar.tsx) | Sidebar/mobile nav; add/remove top-level sections |
 | **Shared UI primitives** | [`src/components/ui/`](src/components/ui/) | Buttons, inputs, selects, toast, empty state |
 | **Feature components** | [`src/components/forms/`](src/components/forms/), [`src/components/entries/`](src/components/entries/), [`src/components/dashboard/`](src/components/dashboard/) | Tables, forms, charts, dialogs |
+| **Sortable / drag-reorder** | [`src/components/sortable/`](src/components/sortable/) | `@dnd-kit` table wrappers ([`SortableTableRoot`](src/components/sortable/SortableTableRoot.tsx), [`SortableTableBody`](src/components/sortable/SortableTableBody.tsx), [`SortableTableRow`](src/components/sortable/SortableTableRow.tsx)); used on lead sources and service types lists |
 
 ### Request/data flow (mental model)
 
@@ -91,7 +92,7 @@ flowchart LR
 
 ## Database schema (source of truth = `migrations/`)
 
-The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 013) to a Postgres database referenced by `DATABASE_URL`.
+The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 014) to a Postgres database referenced by `DATABASE_URL`.
 
 > There is no automated migration runner script in this repo today; migrations are intended to be run manually (or via your deployment/DB tool of choice) in order.
 
@@ -117,6 +118,7 @@ Migrations:
 - [`migrations/001_create_service_types.sql`](migrations/001_create_service_types.sql)
 - [`migrations/005_add_default_price_to_service_types.sql`](migrations/005_add_default_price_to_service_types.sql)
 - [`migrations/009_add_default_duration_to_service_types.sql`](migrations/009_add_default_duration_to_service_types.sql)
+- [`migrations/014_add_sort_order_to_service_types.sql`](migrations/014_add_sort_order_to_service_types.sql)
 - Seed: [`migrations/002_seed_service_types.sql`](migrations/002_seed_service_types.sql)
 
 Columns:
@@ -124,6 +126,7 @@ Columns:
 - **`name`**: `VARCHAR(100) NOT NULL UNIQUE`
 - **`default_price`**: `NUMERIC(10,2)` nullable (suggested price when logging income)
 - **`default_duration`**: `INTEGER` nullable (suggested duration in minutes when logging income)
+- **`sort_order`**: `INTEGER NOT NULL DEFAULT 0` (display order; drag-reorder in UI + [`PUT /api/service-types/reorder`](src/app/api/service-types/reorder/route.ts))
 - **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
 
 #### `income_entries`
@@ -280,12 +283,14 @@ API routes live in [`src/app/api/`](src/app/api/). Handlers are wrapped with [`w
 
 - **GET/POST** `/api/service-types` → [`src/app/api/service-types/route.ts`](src/app/api/service-types/route.ts)
 - **GET/PUT/DELETE** `/api/service-types/:id` → [`src/app/api/service-types/[id]/route.ts`](src/app/api/service-types/[id]/route.ts)
+- **PUT** `/api/service-types/reorder` → [`src/app/api/service-types/reorder/route.ts`](src/app/api/service-types/reorder/route.ts) — body `{ ordered_ids: number[] }` (full permutation of all service type ids); updates `sort_order`
   - Delete protection: cannot delete if referenced by `income_entries` → `409 IN_USE`
 
 ### Lead Sources
 
 - **GET/POST** `/api/lead-sources` → [`src/app/api/lead-sources/route.ts`](src/app/api/lead-sources/route.ts)
 - **GET/PUT/DELETE** `/api/lead-sources/:id` → [`src/app/api/lead-sources/[id]/route.ts`](src/app/api/lead-sources/[id]/route.ts)
+- **PUT** `/api/lead-sources/reorder` → [`src/app/api/lead-sources/reorder/route.ts`](src/app/api/lead-sources/reorder/route.ts) — body `{ ordered_ids: number[] }` (full permutation of all lead source ids); updates `sort_order`
   - Delete protection: cannot delete if referenced by `customers` → `409 IN_USE`
 
 **Marketing UI** ([`src/app/marketing/`](src/app/marketing/)): all authenticated `/api/*` traffic goes through [`src/lib/api-client.ts`](src/lib/api-client.ts) (`getJson` / `postJson` / `putJson` / `deleteJson`) with [`showToastForClientApiError`](src/lib/api-error-toast.ts) on failure—no raw `fetch` in that tree.
@@ -415,14 +420,14 @@ If you change the business model (e.g. allocate expenses by hours, or by fixed m
 #### Service types
 
 - `/service-types`: [`src/app/service-types/page.tsx`](src/app/service-types/page.tsx)
-  - Table: [`src/components/service-types/ServiceTypesTable.tsx`](src/components/service-types/ServiceTypesTable.tsx)
+  - Table: [`src/components/service-types/ServiceTypesTable.tsx`](src/components/service-types/ServiceTypesTable.tsx) (drag handle column reorders rows; persists via `PUT /api/service-types/reorder`)
 - `/service-types/new`: [`src/app/service-types/new/page.tsx`](src/app/service-types/new/page.tsx) → uses [`src/components/forms/ServiceTypeForm.tsx`](src/components/forms/ServiceTypeForm.tsx)
 - `/service-types/[id]/edit`: [`src/app/service-types/[id]/edit/page.tsx`](src/app/service-types/[id]/edit/page.tsx)
 
 #### Lead sources
 
 - `/customers/lead-sources`: [`src/app/customers/lead-sources/page.tsx`](src/app/customers/lead-sources/page.tsx)
-  - Table: [`src/components/lead-sources/LeadSourcesTable.tsx`](src/components/lead-sources/LeadSourcesTable.tsx)
+  - Table: [`src/components/lead-sources/LeadSourcesTable.tsx`](src/components/lead-sources/LeadSourcesTable.tsx) (drag handle reorders; persists via `PUT /api/lead-sources/reorder`)
 - `/customers/lead-sources/new`: [`src/app/customers/lead-sources/new/page.tsx`](src/app/customers/lead-sources/new/page.tsx) → uses [`src/components/forms/LeadSourceForm.tsx`](src/components/forms/LeadSourceForm.tsx)
 - `/customers/lead-sources/[id]/edit`: [`src/app/customers/lead-sources/[id]/edit/page.tsx`](src/app/customers/lead-sources/[id]/edit/page.tsx)
 

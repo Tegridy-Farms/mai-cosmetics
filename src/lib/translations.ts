@@ -57,6 +57,10 @@ export const t = {
     saving: 'שומרת…',
     loading: 'טוענת...',
   },
+  sortable: {
+    dragToReorder: 'גרירה לסידור מחדש',
+    orderSaveError: 'לא ניתן לשמור את הסדר. נסי שוב.',
+  },
   publicForms: {
     defaultHeadline: 'רוצה לשמוע פרטים?',
     defaultSubheadline: 'השאירי פרטים ואחזור אלייך בהקדם.',

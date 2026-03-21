@@ -8,3 +8,4 @@ export * from '@/lib/validation/campaigns';
 export * from '@/lib/validation/forms';
 export * from '@/lib/validation/leads';
 export * from '@/lib/validation/customers';
+export * from '@/lib/validation/reorder';

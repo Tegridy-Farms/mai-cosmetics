@@ -9,7 +9,7 @@ export const GET = withApiHandler(async (_request, { params }) => {
   const id = parseIdParam(params.id);
 
   const result = await sql`
-    SELECT id, name, default_price, default_duration, created_at FROM service_types WHERE id = ${id}
+    SELECT id, name, default_price, default_duration, sort_order, created_at FROM service_types WHERE id = ${id}
   `;
 
   if (result.rows.length === 0) {
@@ -36,7 +36,7 @@ export const PUT = withApiHandler(async (request, { params }) => {
   const result = await sql`
     UPDATE service_types SET name = ${name}, default_price = ${default_price ?? null}, default_duration = ${default_duration ?? null}
     WHERE id = ${id}
-    RETURNING id, name, default_price, default_duration, created_at
+    RETURNING id, name, default_price, default_duration, sort_order, created_at
   `;
 
   return json(result.rows[0]);

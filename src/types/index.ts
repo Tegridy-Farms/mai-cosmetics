@@ -11,6 +11,7 @@ export interface ServiceType {
   name: string;
   default_price?: number | null;
   default_duration?: number | null;
+  sort_order: number;
   created_at?: string;
 }
 

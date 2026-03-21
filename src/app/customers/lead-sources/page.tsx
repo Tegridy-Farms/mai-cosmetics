@@ -87,6 +87,8 @@ export default function LeadSourcesPage() {
           leadSources={leadSources}
           isLoading={isLoading}
           onDelete={handleDeleteClick}
+          showToast={showToast}
+          onReorderComplete={fetchLeadSources}
         />
       </div>
 

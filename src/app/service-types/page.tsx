@@ -87,6 +87,8 @@ export default function ServiceTypesPage() {
           serviceTypes={serviceTypes}
           isLoading={isLoading}
           onDelete={handleDeleteClick}
+          showToast={showToast}
+          onReorderComplete={fetchServiceTypes}
         />
       </div>
 
