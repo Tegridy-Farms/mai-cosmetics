@@ -16,6 +16,7 @@ export default function IncomePage() {
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<FilterState>({});
   const [isLoading, setIsLoading] = useState(true);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
@@ -46,6 +47,7 @@ export default function IncomePage() {
       const json = await res.json();
       setEntries(json.data);
       setTotal(json.total);
+      if (typeof json.pageSize === 'number') setPageSize(json.pageSize);
     } catch {
       showToast(t.toast.couldNotLoad, 'error');
     } finally {
@@ -138,7 +140,7 @@ export default function IncomePage() {
         <Pagination
           total={total}
           page={page}
-          pageSize={20}
+          pageSize={pageSize}
           onChange={handlePageChange}
         />
       </div>

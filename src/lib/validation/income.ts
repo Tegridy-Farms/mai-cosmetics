@@ -17,6 +17,7 @@ export const IncomeEntrySchema = z.object({
 
 export const IncomeQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
+  page_size: z.coerce.number().int().min(1).max(100).default(20),
   service_type_id: z.coerce.number().int().positive().optional(),
   customer_id: z.coerce.number().int().positive().optional(),
   date_from: z.string().regex(dateRegex, 'Date must be in YYYY-MM-DD format').optional(),

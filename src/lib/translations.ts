@@ -260,6 +260,16 @@ export const t = {
     sessionsForCustomer: 'טיפולים ללקוחה',
     allLeadSources: 'כל המקורות',
     searchNoResults: 'אין תוצאות',
+    treatments: {
+      timelineTitle: 'ציר זמן טיפולים',
+      noComment: 'אין הערה לטיפול זה',
+      expandDetails: 'פרטים מלאים והעריכה',
+      editTreatment: 'עריכת טיפול',
+      loadMore: 'טען עוד טיפולים',
+      loadingMore: 'טוען…',
+      showingCount: (loaded: number, total: number) => `מוצגים ${loaded} מתוך ${total} טיפולים`,
+      durationUnit: 'דק׳',
+    },
   },
   leads: {
     title: 'לידים',

@@ -21,8 +21,9 @@ export const POST = withApiHandlerNoParams(async (request) => {
 export const GET = withApiHandlerNoParams(async (request) => {
   const q = parseSearchParams(IncomeQuerySchema, request, 'Invalid query parameters');
   const page = q.page ?? 1;
+  const pageSize = q.page_size ?? 20;
   const { service_type_id, customer_id, date_from, date_to } = q;
-  const offset = (page - 1) * 20;
+  const offset = (page - 1) * pageSize;
 
   const [countResult, dataResult] = await Promise.all([
     sql`
@@ -41,12 +42,12 @@ export const GET = withApiHandlerNoParams(async (request) => {
         AND (${date_from ?? null}::date IS NULL OR date >= ${date_from ?? null})
         AND (${date_to ?? null}::date IS NULL OR date <= ${date_to ?? null})
       ORDER BY date DESC, id DESC
-      LIMIT 20 OFFSET ${offset}
+      LIMIT ${pageSize} OFFSET ${offset}
     `,
   ]);
 
   const total = parseInt((countResult.rows[0] as { total: string }).total, 10);
   const data = dataResult.rows as IncomeEntry[];
 
-  return json({ data, total, page, pageSize: 20 });
+  return json({ data, total, page, pageSize });
 });

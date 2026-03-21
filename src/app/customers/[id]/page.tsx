@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { CustomerTreatmentTimeline } from '@/components/customers/detail/CustomerTreatmentTimeline';
 import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
 import { t } from '@/lib/translations';
 import { formatDate, formatAmount } from '@/lib/format';
 import type { IncomeEntry, ServiceType } from '@/types';
+
+const CUSTOMER_INCOME_PAGE_SIZE = 100;
 
 interface CustomerDetail {
   id: number;
@@ -34,16 +37,24 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [stats, setStats] = useState<CustomerStats | null>(null);
   const [incomeEntries, setIncomeEntries] = useState<IncomeEntry[]>([]);
+  const [incomeTotal, setIncomeTotal] = useState(0);
+  const incomePageRef = useRef(1);
+  const [loadingMoreIncome, setLoadingMoreIncome] = useState(false);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { showToast, toasts } = useToast();
 
   useEffect(() => {
     if (isNaN(id)) return;
+    setIncomeEntries([]);
+    setIncomeTotal(0);
+    incomePageRef.current = 1;
     Promise.all([
       fetch(`/api/customers/${id}`),
       fetch(`/api/customers/${id}/stats`),
-      fetch(`/api/income?customer_id=${id}&page=1`).catch(() => ({ json: () => ({ data: [] }) })),
+      fetch(
+        `/api/income?customer_id=${id}&page=1&page_size=${CUSTOMER_INCOME_PAGE_SIZE}`
+      ).catch(() => ({ json: () => ({ data: [], total: 0 }) })),
       fetch('/api/service-types'),
     ])
       .then(async ([custRes, statsRes, incomeRes, stRes]) => {
@@ -55,11 +66,33 @@ export default function CustomerDetailPage() {
         setStats(await statsRes.json());
         const incomeJson = await (incomeRes as Response).json();
         setIncomeEntries(incomeJson.data ?? []);
+        setIncomeTotal(typeof incomeJson.total === 'number' ? incomeJson.total : 0);
+        incomePageRef.current = 1;
         setServiceTypes(await stRes.json());
       })
       .catch(() => showToast(t.toast.couldNotLoad, 'error'))
       .finally(() => setIsLoading(false));
   }, [id, router, showToast]);
+
+  const loadMoreIncome = useCallback(async () => {
+    if (isNaN(id) || loadingMoreIncome || incomeEntries.length >= incomeTotal) return;
+
+    const nextPage = incomePageRef.current + 1;
+    setLoadingMoreIncome(true);
+    try {
+      const res = await fetch(
+        `/api/income?customer_id=${id}&page=${nextPage}&page_size=${CUSTOMER_INCOME_PAGE_SIZE}`
+      );
+      const json = await res.json();
+      const chunk = (json.data ?? []) as IncomeEntry[];
+      incomePageRef.current = nextPage;
+      setIncomeEntries((prev) => [...prev, ...chunk]);
+    } catch {
+      showToast(t.toast.couldNotLoad, 'error');
+    } finally {
+      setLoadingMoreIncome(false);
+    }
+  }, [id, incomeEntries.length, incomeTotal, loadingMoreIncome, showToast]);
 
   if (isNaN(id) || isLoading) {
     return (
@@ -75,6 +108,8 @@ export default function CustomerDetailPage() {
 
   const getServiceTypeName = (stId: number) =>
     serviceTypes.find((st) => st.id === stId)?.name ?? String(stId);
+
+  const tr = t.customers.treatments;
 
   return (
     <div className="max-w-[1200px] mx-auto w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -125,51 +160,32 @@ export default function CustomerDetailPage() {
         )}
       </div>
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
-        <h2 className="px-4 py-3 border-b border-border text-lg font-semibold text-text-primary">
-          {t.customers.sessionsForCustomer}
-        </h2>
-        {incomeEntries.length === 0 ? (
-          <div className="p-6 text-center text-text-muted">{t.customers.noSessions}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-start">
-              <thead className="border-b border-border">
-                <tr>
-                  <th className="py-3 px-4 font-medium text-text-muted">{t.entries.date}</th>
-                  <th className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceName}</th>
-                  <th className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceType}</th>
-                  <th className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
-                  <th className="py-3 px-4 font-medium text-text-muted max-w-[180px]">{t.entries.comment}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {incomeEntries.map((entry) => (
-                  <tr key={entry.id} className="border-b border-border hover:bg-background">
-                    <td className="py-3 px-4 text-text-primary">{formatDate(entry.date)}</td>
-                    <td className="py-3 px-4 text-text-primary">{entry.service_name}</td>
-                    <td className="py-3 px-4 text-text-primary">
-                      {getServiceTypeName(entry.service_type_id)}
-                    </td>
-                    <td className="py-3 px-4 text-text-primary text-end font-mono">
-                      {formatAmount(entry.amount)}
-                    </td>
-                    <td className="py-3 px-4 text-text-secondary max-w-[180px]">
-                      {entry.comment ? (
-                        <span className="line-clamp-2" title={entry.comment}>
-                          {entry.comment}
-                        </span>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <CustomerTreatmentTimeline
+        entries={incomeEntries}
+        total={incomeTotal}
+        serviceTypeName={getServiceTypeName}
+        fieldLabels={{
+          date: t.entries.date,
+          serviceName: t.entries.serviceName,
+          serviceType: t.entries.serviceType,
+          durationMin: t.entries.durationMin,
+          amount: t.entries.amount,
+          comment: t.entries.comment,
+        }}
+        copy={{
+          timelineTitle: tr.timelineTitle,
+          noSessions: t.customers.noSessions,
+          noComment: tr.noComment,
+          expandDetails: tr.expandDetails,
+          editTreatment: tr.editTreatment,
+          loadMore: tr.loadMore,
+          loadingMore: tr.loadingMore,
+          showingCount: tr.showingCount,
+          durationUnit: tr.durationUnit,
+        }}
+        onLoadMore={incomeEntries.length < incomeTotal ? loadMoreIncome : undefined}
+        loadingMore={loadingMoreIncome}
+      />
 
       <Link
         href="/customers"
