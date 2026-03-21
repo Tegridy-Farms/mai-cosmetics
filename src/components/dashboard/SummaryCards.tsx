@@ -38,7 +38,13 @@ function SummaryCard({ label, value, colorClass, suffix, ariaLabel, testId }: Ca
 }
 
 export function SummaryCards({ initialMonthData, initialAllData }: SummaryCardsProps) {
-  const [period, setPeriod] = useState<"month" | "all">("month");
+  const [period, setPeriod] = useState<"month" | "all">(() => {
+    const monthEmpty =
+      initialMonthData.gross_income === 0 && initialMonthData.total_expenses === 0;
+    const allHasData =
+      initialAllData.gross_income > 0 || initialAllData.total_expenses > 0;
+    return monthEmpty && allHasData ? "all" : "month";
+  });
   const data = period === "month" ? initialMonthData : initialAllData;
 
   const netIncomeColor =

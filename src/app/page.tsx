@@ -42,8 +42,9 @@ export default async function DashboardPage() {
     fetchTrendData(),
   ]);
 
+  // "Month" is calendar month only; income dated in other months still exists in `allData`.
   const isEmpty =
-    monthData.gross_income === 0 && monthData.total_expenses === 0;
+    allData.gross_income === 0 && allData.total_expenses === 0;
 
   return (
     <div className="p-4 sm:p-6 max-w-[1200px] mx-auto w-full">

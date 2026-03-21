@@ -11,7 +11,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
       WITH base AS (
         SELECT *
         FROM leads
-        WHERE submitted_at >= (NOW() - (${days}::int || ' days')::interval)
+        WHERE submitted_at >= NOW() - (${days} * INTERVAL '1 day')
       ),
       conv AS (
         SELECT
@@ -40,7 +40,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
   const byStage = await sql`
     SELECT stage, COUNT(*)::int AS total
     FROM leads
-    WHERE submitted_at >= (NOW() - (${days}::int || ' days')::interval)
+    WHERE submitted_at >= NOW() - (${days} * INTERVAL '1 day')
     GROUP BY stage
     ORDER BY total DESC
   `;
@@ -49,7 +49,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
     SELECT source_channel, COUNT(*)::int AS total,
       ROUND(100.0 * SUM(CASE WHEN stage = 'converted' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 1) AS conversion_rate_pct
     FROM leads
-    WHERE submitted_at >= (NOW() - (${days}::int || ' days')::interval)
+    WHERE submitted_at >= NOW() - (${days} * INTERVAL '1 day')
     GROUP BY source_channel
     ORDER BY total DESC
   `;
@@ -58,7 +58,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
     WITH base AS (
       SELECT *
       FROM leads
-      WHERE submitted_at >= (NOW() - (${days}::int || ' days')::interval)
+      WHERE submitted_at >= NOW() - (${days} * INTERVAL '1 day')
     ),
     conv_customers AS (
       SELECT DISTINCT campaign_id, converted_customer_id
@@ -92,7 +92,7 @@ export const GET = withApiHandlerNoParams(async (request) => {
       to_char(date_trunc('day', submitted_at), 'YYYY-MM-DD') AS day,
       COUNT(*)::int AS total
     FROM leads
-    WHERE submitted_at >= (NOW() - (${days}::int || ' days')::interval)
+    WHERE submitted_at >= NOW() - (${days} * INTERVAL '1 day')
     GROUP BY 1
     ORDER BY day ASC
   `;
