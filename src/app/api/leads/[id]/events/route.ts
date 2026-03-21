@@ -14,7 +14,7 @@ export const GET = withApiHandler(async (_request, { params }) => {
     SELECT id, lead_id, type, payload, created_at
     FROM lead_events
     WHERE lead_id = ${leadId}
-    ORDER BY created_at DESC, id DESC
+    ORDER BY created_at ASC, id ASC
   `;
 
   return json(result.rows);
