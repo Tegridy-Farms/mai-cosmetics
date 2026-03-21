@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { t } from '@/lib/translations';
 
 interface Customer {
@@ -131,23 +132,15 @@ export function CustomerCombobox({
     }
   }, [highlightIndex, isOpen]);
 
-  const handleTriggerClick = () => {
-    if (disabled) return;
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setSearch('');
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
-  };
-
   const handleSelect = (customer: Customer | null) => {
     onValueChange?.(customer ? String(customer.id) : '', customer);
     setIsOpen(false);
     setSearch('');
   };
 
-  const addNewIndex = onAddNew ? 1 + customers.length : -1;
-  const maxHighlightIndex = onAddNew ? 1 + customers.length : customers.length;
+  /** Highlight index 0 = add-new (when onAddNew); then customers at 1..n */
+  const addNewIndex = onAddNew ? 0 : -1;
+  const maxHighlightIndex = onAddNew ? customers.length : Math.max(0, customers.length - 1);
 
   const handleAddNew = () => {
     onAddNew?.();
@@ -160,7 +153,11 @@ export function CustomerCombobox({
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        setIsOpen(true);
+        flushSync(() => {
+          setIsOpen(true);
+          setSearch('');
+        });
+        queueMicrotask(() => inputRef.current?.focus());
       }
       return;
     }
@@ -175,12 +172,11 @@ export function CustomerCombobox({
         break;
       case 'Enter':
         e.preventDefault();
-        if (highlightIndex === 0) {
-          handleSelect(null);
-        } else if (highlightIndex === addNewIndex) {
+        if (onAddNew && highlightIndex === addNewIndex) {
           handleAddNew();
-        } else if (customers[highlightIndex - 1]) {
-          handleSelect(customers[highlightIndex - 1]);
+        } else {
+          const ci = onAddNew ? highlightIndex - 1 : highlightIndex;
+          if (customers[ci]) handleSelect(customers[ci]);
         }
         break;
       case 'Escape':
@@ -190,6 +186,24 @@ export function CustomerCombobox({
       default:
         break;
     }
+  };
+
+  const openAndFocusSearch = () => {
+    flushSync(() => {
+      setIsOpen(true);
+      setSearch('');
+    });
+    queueMicrotask(() => inputRef.current?.focus());
+  };
+
+  const handleComboboxClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+    if (isOpen && (e.target as HTMLElement).closest('input')) return;
+    if (isOpen) {
+      setIsOpen(false);
+      return;
+    }
+    openAndFocusSearch();
   };
 
   return (
@@ -203,7 +217,7 @@ export function CustomerCombobox({
         aria-describedby={ariaDescribedby}
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        onClick={handleTriggerClick}
+        onClick={handleComboboxClick}
         className={`w-full min-h-[44px] px-3 flex items-center justify-between border rounded-[10px] outline-none transition-colors text-start cursor-pointer ${
           ariaInvalid
             ? 'border-error focus:ring-2 focus:ring-error focus:border-error'
@@ -215,12 +229,18 @@ export function CustomerCombobox({
             <input
               ref={inputRef}
               type="text"
+              enterKeyHint="search"
+              inputMode="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
               placeholder={t.forms.searchCustomer}
-              className="w-full bg-transparent border-none outline-none placeholder:text-text-muted"
+              className="w-full min-h-[24px] bg-transparent border-none outline-none placeholder:text-text-muted touch-manipulation"
               autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
             />
           ) : (
             displayText || placeholder
@@ -262,7 +282,7 @@ export function CustomerCombobox({
           id={id ? `${id}-listbox` : undefined}
           ref={listRef}
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-1 max-h-[240px] overflow-auto bg-surface border border-border rounded-[10px] shadow-md z-50 py-1"
+          className="absolute top-full left-0 right-0 mt-1 max-h-[240px] overflow-auto bg-surface border border-border rounded-[10px] shadow-md z-50 pt-0 pb-1"
         >
           {isLoading ? (
             <li className="px-3 py-4 text-center text-text-muted text-sm">{t.common.loading}</li>
@@ -270,38 +290,11 @@ export function CustomerCombobox({
             <li className="px-3 py-4 text-center text-text-muted text-sm">{t.customers.searchNoResults}</li>
           ) : (
             <>
-              <li
-                role="option"
-                aria-selected={!value || value === ''}
-                className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
-                  highlightIndex === 0 ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
-                }`}
-                onClick={() => handleSelect(null)}
-                onMouseEnter={() => setHighlightIndex(0)}
-              >
-                — {t.forms.customerOptional}
-              </li>
-              {customers.length > 0 && (
-                customers.map((c, i) => (
-                  <li
-                    key={c.id}
-                    role="option"
-                    aria-selected={String(c.id) === value}
-                    className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
-                      (i + 1) === highlightIndex ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
-                    }`}
-                    onClick={() => handleSelect(c)}
-                    onMouseEnter={() => setHighlightIndex(i + 1)}
-                  >
-                    {customerLabel(c)}
-                  </li>
-                ))
-              )}
               {onAddNew && (
                 <li
                   role="option"
                   aria-selected={value === NEW_CUSTOMER_VALUE}
-                  className={`border-t border-border px-3 py-2 text-[14px] cursor-pointer outline-none flex items-center gap-2 ${
+                  className={`sticky top-0 z-10 bg-surface border-b border-border px-3 py-2 text-[14px] cursor-pointer outline-none flex items-center gap-2 ${
                     highlightIndex === addNewIndex ? 'bg-primary-tint text-primary' : 'text-primary hover:bg-primary-tint'
                   }`}
                   onClick={handleAddNew}
@@ -313,6 +306,29 @@ export function CustomerCombobox({
                   </svg>
                   {t.forms.addNewCustomer}
                 </li>
+              )}
+              {customers.length > 0 ? (
+                customers.map((c, i) => {
+                  const rowHighlight = onAddNew ? i + 1 === highlightIndex : i === highlightIndex;
+                  return (
+                    <li
+                      key={c.id}
+                      role="option"
+                      aria-selected={String(c.id) === value}
+                      className={`px-3 py-2 text-[14px] cursor-pointer outline-none ${
+                        rowHighlight ? 'bg-primary-tint text-primary' : 'text-text-primary hover:bg-background'
+                      }`}
+                      onClick={() => handleSelect(c)}
+                      onMouseEnter={() => setHighlightIndex(onAddNew ? i + 1 : i)}
+                    >
+                      {customerLabel(c)}
+                    </li>
+                  );
+                })
+              ) : (
+                !isLoading && (
+                  <li className="px-3 py-4 text-center text-text-muted text-sm">{t.customers.searchNoResults}</li>
+                )
               )}
             </>
           )}
