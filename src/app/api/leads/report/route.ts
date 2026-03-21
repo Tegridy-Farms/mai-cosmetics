@@ -31,9 +31,9 @@ export const GET = withApiHandlerNoParams(async (request) => {
         (SELECT COUNT(*)::int FROM base WHERE stage = 'converted') AS leads_converted,
         (SELECT ROUND(100.0 * COUNT(*) / NULLIF((SELECT COUNT(*) FROM base), 0), 1)
          FROM base WHERE stage = 'converted') AS conversion_rate_pct,
-        (SELECT ROUND(AVG(EXTRACT(EPOCH FROM (first_contact_at - submitted_at)))/60.0)::numeric, 1)
+        (SELECT ROUND((AVG(EXTRACT(EPOCH FROM (first_contact_at - submitted_at)) / 60.0)::numeric), 1)
          FROM conv WHERE first_contact_at IS NOT NULL) AS avg_minutes_to_first_contact,
-        (SELECT ROUND(AVG(EXTRACT(EPOCH FROM (converted_at - submitted_at)))/60.0)::numeric, 1)
+        (SELECT ROUND((AVG(EXTRACT(EPOCH FROM (converted_at - submitted_at)) / 60.0)::numeric), 1)
          FROM conv WHERE converted_at IS NOT NULL) AS avg_minutes_to_convert
     `;
 
