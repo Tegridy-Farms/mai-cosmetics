@@ -54,6 +54,7 @@ export default async function IncomeEditPage({
           date: entry.date,
           duration_minutes: entry.duration_minutes,
           amount: entry.amount,
+          applied_addon_ids: Array.isArray(entry.applied_addon_ids) ? entry.applied_addon_ids : [],
           comment: entry.comment ?? undefined,
         }}
       />

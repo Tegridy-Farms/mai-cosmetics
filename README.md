@@ -93,7 +93,7 @@ flowchart LR
 
 ## Database schema (source of truth = `migrations/`)
 
-The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 016) to a Postgres database referenced by `DATABASE_URL`.
+The schema is defined by SQL migrations in [`migrations/`](migrations/). Apply them **in numeric order** (001 → 017) to a Postgres database referenced by `DATABASE_URL`.
 
 > There is no automated migration runner script in this repo today; migrations are intended to be run manually (or via your deployment/DB tool of choice) in order.
 
@@ -130,12 +130,30 @@ Columns:
 - **`sort_order`**: `INTEGER NOT NULL DEFAULT 0` (display order; drag-reorder in UI + [`PUT /api/service-types/reorder`](src/app/api/service-types/reorder/route.ts))
 - **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
 
+#### `addons`
+
+Migration: [`migrations/017_addons_and_income_applied_addons.sql`](migrations/017_addons_and_income_applied_addons.sql)
+
+Purpose: catalog of **תוספות** (extras such as French manicure add-on) with a fixed price. Each row stores **`service_type_ids`** (`INTEGER[]`): which service types may offer this addon when logging income (many-to-many without a separate junction table).
+
+Columns:
+- **`id`**: `SERIAL PRIMARY KEY`
+- **`name`**: `VARCHAR(100) NOT NULL UNIQUE`
+- **`price`**: `NUMERIC(10,2) NOT NULL CHECK (price > 0)`
+- **`service_type_ids`**: `INTEGER[] NOT NULL DEFAULT '{}'` (ids of `service_types` this addon applies to)
+- **`sort_order`**: `INTEGER NOT NULL DEFAULT 0`
+- **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
+
+Indexes:
+- `addons_sort_order_idx` on `(sort_order)`
+
 #### `income_entries`
 
 Migrations:
 - [`migrations/003_create_income_entries.sql`](migrations/003_create_income_entries.sql)
 - [`migrations/008_add_customer_to_income.sql`](migrations/008_add_customer_to_income.sql)
 - [`migrations/015_add_comment_to_income_entries.sql`](migrations/015_add_comment_to_income_entries.sql)
+- [`migrations/017_addons_and_income_applied_addons.sql`](migrations/017_addons_and_income_applied_addons.sql)
 
 Columns:
 - **`id`**: `SERIAL PRIMARY KEY`
@@ -145,6 +163,7 @@ Columns:
 - **`date`**: `DATE NOT NULL`
 - **`duration_minutes`**: `INTEGER NOT NULL CHECK (duration_minutes > 0)`
 - **`amount`**: `NUMERIC(10,2) NOT NULL CHECK (amount > 0)`
+- **`applied_addon_ids`**: `INTEGER[] NOT NULL DEFAULT '{}'` (which addons were applied; duplicates allowed for quantity, e.g. two of the same add-on)
 - **`comment`**: `VARCHAR(2000)` nullable (optional note on the session)
 - **`created_at`**: `TIMESTAMPTZ DEFAULT NOW()`
 
@@ -263,9 +282,16 @@ API routes live in [`src/app/api/`](src/app/api/). Handlers are wrapped with [`w
 
 - **GET** `/api/income?page=1&service_type_id?&customer_id?&date_from?&date_to?` → [`src/app/api/income/route.ts`](src/app/api/income/route.ts)
   - Pagination: fixed `pageSize = 20`, sorted by `date DESC, id DESC`
-- **POST** `/api/income` → create income entry (validated by `IncomeEntrySchema`)
+- **POST** `/api/income` → create income entry (validated by `IncomeEntrySchema`; body may include `applied_addon_ids: number[]`)
 - **GET/PUT/DELETE** `/api/income/:id` → [`src/app/api/income/[id]/route.ts`](src/app/api/income/[id]/route.ts)
 - **GET** `/api/income/export` → CSV stream → [`src/app/api/income/export/route.ts`](src/app/api/income/export/route.ts)
+
+### Addons (תוספות)
+
+- **GET** `/api/addons` → [`src/app/api/addons/route.ts`](src/app/api/addons/route.ts) — list all addons (each row includes `service_type_ids`)
+- **GET** `/api/addons?service_type_id=<id>` → same handler; returns addons whose `service_type_ids` includes that type (for the income form)
+- **POST** `/api/addons` → create (`name`, `price`, `service_type_ids`)
+- **GET/PUT/DELETE** `/api/addons/:id` → [`src/app/api/addons/[id]/route.ts`](src/app/api/addons/[id]/route.ts)
 
 ### Expenses
 
@@ -429,6 +455,7 @@ If you change the business model (e.g. allocate expenses by hours, or by fixed m
   - Table: [`src/components/service-types/ServiceTypesTable.tsx`](src/components/service-types/ServiceTypesTable.tsx) (drag handle column reorders rows; persists via `PUT /api/service-types/reorder`)
 - `/service-types/new`: [`src/app/service-types/new/page.tsx`](src/app/service-types/new/page.tsx) → uses [`src/components/forms/ServiceTypeForm.tsx`](src/components/forms/ServiceTypeForm.tsx)
 - `/service-types/[id]/edit`: [`src/app/service-types/[id]/edit/page.tsx`](src/app/service-types/[id]/edit/page.tsx)
+  - תוספות: second section on the same page + [`/service-types/addons/new`](src/app/service-types/addons/new/page.tsx) and [`/service-types/addons/[id]/edit`](src/app/service-types/addons/[id]/edit/page.tsx)
 
 #### Lead sources
 

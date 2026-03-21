@@ -1,5 +1,6 @@
-import { sql } from '@/lib/db';
+import { query, sql } from '@/lib/db';
 import { ApiError, json, parseIdParam, parseJsonBody, parseSchema, withApiHandler } from '@/lib/http';
+import { assertAppliedAddonsAllowed } from '@/lib/income-applied-addons';
 import { IncomeEntrySchema } from '@/lib/schemas';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +9,7 @@ export const GET = withApiHandler(async (_request, { params }) => {
   const id = parseIdParam(params.id);
 
   const result = await sql`
-    SELECT id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, created_at
+    SELECT id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, applied_addon_ids, created_at
     FROM income_entries
     WHERE id = ${id}
   `;
@@ -32,18 +33,45 @@ export const PUT = withApiHandler(async (request, { params }) => {
   const body = await parseJsonBody(request);
   const data = parseSchema(IncomeEntrySchema, body);
 
-  const { service_name, service_type_id, customer_id, date, duration_minutes, amount, comment } = data;
+  const {
+    service_name,
+    service_type_id,
+    customer_id,
+    date,
+    duration_minutes,
+    amount,
+    applied_addon_ids: appliedAddonIdsRaw,
+    comment,
+  } = data;
 
-  const result = await sql`
-    UPDATE income_entries
-    SET service_name = ${service_name}, service_type_id = ${service_type_id},
-        customer_id = ${customer_id ?? null}, date = ${date},
-        duration_minutes = ${duration_minutes}, amount = ${amount}, comment = ${comment}
-    WHERE id = ${id}
-    RETURNING id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, created_at
-  `;
+  const applied_addon_ids: number[] = Array.isArray(appliedAddonIdsRaw)
+    ? appliedAddonIdsRaw
+    : [];
 
-  return json(result.rows[0]);
+  await assertAppliedAddonsAllowed(service_type_id, applied_addon_ids);
+
+  const rows = await query<Record<string, unknown>>(
+    `UPDATE income_entries
+     SET service_name = $1, service_type_id = $2,
+         customer_id = $3, date = $4::date,
+         duration_minutes = $5, amount = $6, comment = $7,
+         applied_addon_ids = $8::int4[]
+     WHERE id = $9
+     RETURNING id, service_name, service_type_id, customer_id, date::text AS date, duration_minutes, amount, comment, applied_addon_ids, created_at`,
+    [
+      service_name,
+      service_type_id,
+      customer_id ?? null,
+      date,
+      duration_minutes,
+      amount,
+      comment,
+      applied_addon_ids,
+      id,
+    ]
+  );
+
+  return json(rows[0]);
 });
 
 export const DELETE = withApiHandler(async (_request, { params }) => {

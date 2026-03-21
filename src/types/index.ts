@@ -97,8 +97,18 @@ export interface IncomeEntry {
   date: string;
   duration_minutes: number;
   amount: number;
+  applied_addon_ids?: number[];
   comment?: string | null;
   created_at: string;
+}
+
+export interface Addon {
+  id: number;
+  name: string;
+  price: number;
+  service_type_ids: number[];
+  sort_order: number;
+  created_at?: string;
 }
 
 export interface ExpenseEntry {

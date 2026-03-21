@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useToast, ToastContainer } from '@/components/ui/toast';
@@ -10,7 +10,7 @@ import { Pagination } from '@/components/entries/Pagination';
 import { DeleteConfirmDialog } from '@/components/entries/DeleteConfirmDialog';
 import { t } from '@/lib/translations';
 import { formatDate } from '@/lib/format';
-import type { IncomeEntry, ServiceType, FilterState } from '@/types';
+import type { Addon, IncomeEntry, ServiceType, FilterState } from '@/types';
 
 export default function IncomePage() {
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
@@ -20,6 +20,7 @@ export default function IncomePage() {
   const [filters, setFilters] = useState<FilterState>({});
   const [isLoading, setIsLoading] = useState(true);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [addons, setAddons] = useState<Addon[]>([]);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDescription, setDeleteDescription] = useState('');
@@ -32,6 +33,18 @@ export default function IncomePage() {
       .then((data) => setServiceTypes(data))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch('/api/addons')
+      .then((r) => r.json())
+      .then((data) => setAddons(Array.isArray(data) ? data : []))
+      .catch(() => setAddons([]));
+  }, []);
+
+  const addonNameById = useMemo(
+    () => new Map(addons.map((a) => [a.id, a.name] as const)),
+    [addons]
+  );
 
   // Fetch income entries
   const fetchEntries = useCallback(async () => {
@@ -133,6 +146,7 @@ export default function IncomePage() {
         <IncomeTable
           entries={entries}
           serviceTypes={serviceTypes}
+          addonNameById={addonNameById}
           isLoading={isLoading}
           onDelete={handleDeleteClick}
         />

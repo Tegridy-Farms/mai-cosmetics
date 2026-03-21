@@ -7,10 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { t } from '@/lib/translations';
+import { IncomeAddonsPanel, type IncomeEligibleAddon } from '@/components/forms/income/IncomeAddonsPanel';
 
 export type IncomeFormErrors = Partial<
   Record<'service_name' | 'service_type_id' | 'date' | 'duration_minutes' | 'amount' | 'comment', string>
 >;
+
+export type IncomeFormAddonsPanelProps = {
+  eligibleAddons: IncomeEligibleAddon[];
+  addonQuantities: Record<number, number>;
+  onQtyChange: (addonId: number, qty: number) => void;
+  baseAmount: number;
+  addonsTotal: number;
+  suggestedTotal: number;
+  amountTouched: boolean;
+  onSyncPrice: () => void;
+  isLoading: boolean;
+};
 
 interface IncomeFormFieldsProps {
   serviceName: string;
@@ -26,6 +39,7 @@ interface IncomeFormFieldsProps {
   setDurationMinutes: (v: string) => void;
   amount: string;
   setAmount: (v: string) => void;
+  onAmountUserEdit?: () => void;
   comment: string;
   setComment: (v: string) => void;
   errors: IncomeFormErrors;
@@ -33,6 +47,7 @@ interface IncomeFormFieldsProps {
   isEdit: boolean;
   isLoadingServiceTypes: boolean;
   serviceTypesCount: number;
+  addonsPanel: IncomeFormAddonsPanelProps | null;
 }
 
 export function IncomeFormFields({
@@ -49,6 +64,7 @@ export function IncomeFormFields({
   setDurationMinutes,
   amount,
   setAmount,
+  onAmountUserEdit,
   comment,
   setComment,
   errors,
@@ -56,6 +72,7 @@ export function IncomeFormFields({
   isEdit,
   isLoadingServiceTypes,
   serviceTypesCount,
+  addonsPanel,
 }: IncomeFormFieldsProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -161,6 +178,21 @@ export function IncomeFormFields({
         )}
       </div>
 
+      {addonsPanel && (
+        <IncomeAddonsPanel
+          eligibleAddons={addonsPanel.eligibleAddons}
+          addonQuantities={addonsPanel.addonQuantities}
+          onQtyChange={addonsPanel.onQtyChange}
+          baseAmount={addonsPanel.baseAmount}
+          addonsTotal={addonsPanel.addonsTotal}
+          suggestedTotal={addonsPanel.suggestedTotal}
+          amountTouched={addonsPanel.amountTouched}
+          onSyncPrice={addonsPanel.onSyncPrice}
+          isLoading={addonsPanel.isLoading}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
       <div>
         <Label htmlFor="amount">{t.forms.amountIls}</Label>
         <div className="relative">
@@ -173,7 +205,11 @@ export function IncomeFormFields({
             min="0.01"
             step="0.01"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onFocus={() => onAmountUserEdit?.()}
+            onChange={(e) => {
+              onAmountUserEdit?.();
+              setAmount(e.target.value);
+            }}
             error={!!errors.amount}
             aria-invalid={errors.amount ? 'true' : undefined}
             aria-describedby={errors.amount ? 'amount-error' : undefined}

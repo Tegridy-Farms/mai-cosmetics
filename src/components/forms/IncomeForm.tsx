@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddCustomerModal } from '@/components/modals/AddCustomerModal';
 import { IncomeFormFields } from '@/components/forms/income/IncomeFormFields';
 import { useIncomeServiceTypes } from '@/components/forms/income/useIncomeServiceTypes';
@@ -11,6 +11,7 @@ import { showToastForClientApiError } from '@/lib/api-error-toast';
 import { t } from '@/lib/translations';
 import { IncomeFormClientSchema } from '@/lib/validation/income';
 import { zodIssuesToFieldErrors } from '@/lib/zod-field-errors';
+import type { IncomeEligibleAddon } from '@/components/forms/income/IncomeAddonsPanel';
 import type { IncomeFormErrors } from '@/components/forms/income/IncomeFormFields';
 
 interface ServiceType {
@@ -27,8 +28,35 @@ export type IncomeFormInitialData = {
   date?: string;
   duration_minutes?: number;
   amount?: number;
+  applied_addon_ids?: number[];
   comment?: string | null;
 };
+
+function countsFromAppliedIds(ids?: number[] | null): Record<number, number> {
+  const m: Record<number, number> = {};
+  if (!ids || !Array.isArray(ids)) return m;
+  for (const id of ids) {
+    if (typeof id === 'number' && id > 0) {
+      m[id] = (m[id] ?? 0) + 1;
+    }
+  }
+  return m;
+}
+
+function flattenAddonQuantities(quantities: Record<number, number>): number[] {
+  const out: number[] = [];
+  for (const [idStr, n] of Object.entries(quantities)) {
+    const id = Number(idStr);
+    const count = Math.floor(Number(n));
+    if (!Number.isInteger(id) || id < 1 || !Number.isFinite(count) || count < 1) continue;
+    for (let i = 0; i < count; i++) out.push(id);
+  }
+  return out;
+}
+
+function roundMoney(n: number): string {
+  return String(Math.round(n * 100) / 100);
+}
 
 interface IncomeFormProps {
   serviceTypes: ServiceType[];
@@ -51,6 +79,17 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
   );
   const [amount, setAmount] = useState(initialData?.amount != null ? String(initialData.amount) : '');
   const [comment, setComment] = useState(initialData?.comment ?? '');
+  const [addonQuantities, setAddonQuantities] = useState<Record<number, number>>(() =>
+    countsFromAppliedIds(initialData?.applied_addon_ids)
+  );
+  const [eligibleAddons, setEligibleAddons] = useState<IncomeEligibleAddon[]>([]);
+  const [loadingAddons, setLoadingAddons] = useState(
+    () =>
+      initialData?.service_type_id != null &&
+      Number.isFinite(Number(initialData.service_type_id)) &&
+      Number(initialData.service_type_id) > 0
+  );
+  const [amountDirty, setAmountDirty] = useState(false);
   const [errors, setErrors] = useState<IncomeFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -61,6 +100,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
     date: string;
     duration_minutes: number;
     amount: number;
+    applied_addon_ids: number[];
     comment: string | null;
   } | null>(null);
   const { showToast, toasts } = useToast();
@@ -71,9 +111,93 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
     label: st.name,
   }));
 
+  const selectedServiceType = useMemo(
+    () => effectiveServiceTypes.find((s) => String(s.id) === serviceTypeId),
+    [effectiveServiceTypes, serviceTypeId]
+  );
+
+  const baseAmount = useMemo(() => {
+    const p = selectedServiceType?.default_price;
+    if (p != null && Number(p) > 0) return Number(p);
+    return 0;
+  }, [selectedServiceType]);
+
+  const addonsTotal = useMemo(() => {
+    return eligibleAddons.reduce((sum, a) => {
+      const q = addonQuantities[a.id] ?? 0;
+      return sum + q * a.price;
+    }, 0);
+  }, [eligibleAddons, addonQuantities]);
+
+  const suggestedTotal = baseAmount + addonsTotal;
+
+  useEffect(() => {
+    if (!serviceTypeId) {
+      setEligibleAddons([]);
+      setLoadingAddons(false);
+      return;
+    }
+
+    const ac = new AbortController();
+    setLoadingAddons(true);
+    fetch(`/api/addons?service_type_id=${encodeURIComponent(serviceTypeId)}`, {
+      signal: ac.signal,
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setEligibleAddons(
+          list.map((x: { id: number; name: string; price: number | string }) => ({
+            id: x.id,
+            name: x.name,
+            price: Number(x.price),
+          }))
+        );
+      })
+      .catch(() => {
+        if (!ac.signal.aborted) setEligibleAddons([]);
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setLoadingAddons(false);
+      });
+
+    return () => ac.abort();
+  }, [serviceTypeId]);
+
+  useEffect(() => {
+    if (!serviceTypeId || loadingAddons || amountDirty) return;
+    if (suggestedTotal > 0) {
+      setAmount(roundMoney(suggestedTotal));
+    }
+  }, [
+    serviceTypeId,
+    loadingAddons,
+    amountDirty,
+    suggestedTotal,
+  ]);
+
+  const handleAddonQtyChange = useCallback((addonId: number, qty: number) => {
+    setAddonQuantities((prev) => {
+      const next = { ...prev };
+      if (qty <= 0) delete next[addonId];
+      else next[addonId] = qty;
+      return next;
+    });
+  }, []);
+
+  const handleSyncPrice = useCallback(() => {
+    setAmountDirty(false);
+    if (suggestedTotal > 0) {
+      setAmount(roundMoney(suggestedTotal));
+    }
+  }, [suggestedTotal]);
+
   const handleServiceTypeChange = (value: string) => {
     setServiceTypeId(value);
+    setAddonQuantities({});
+    setAmountDirty(false);
     if (value) {
+      setLoadingAddons(true);
       const st = effectiveServiceTypes.find((s) => String(s.id) === value);
       if (st) {
         if (st.default_price != null && st.default_price > 0) {
@@ -83,8 +207,15 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           setDurationMinutes(String(st.default_duration));
         }
       }
+    } else {
+      setLoadingAddons(false);
+      setEligibleAddons([]);
     }
   };
+
+  const handleAmountUserEdit = useCallback(() => {
+    setAmountDirty(true);
+  }, []);
 
   const handleAddCustomerSuccess = async (customer: { id: number }) => {
     if (pendingIncomeId == null || !savedIncomeData) return;
@@ -146,6 +277,11 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           ? result.data.comment.trim()
           : null;
 
+      const validAddonIdSet = new Set(eligibleAddons.map((a) => a.id));
+      const applied_addon_ids = flattenAddonQuantities(addonQuantities).filter((id) =>
+        validAddonIdSet.has(id)
+      );
+
       const payload = {
         service_name: result.data.service_name,
         service_type_id: Number(result.data.service_type_id),
@@ -153,6 +289,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
         date: result.data.date,
         duration_minutes: result.data.duration_minutes,
         amount: result.data.amount,
+        applied_addon_ids,
         comment: commentPayload,
       };
 
@@ -173,6 +310,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           date: result.data.date,
           duration_minutes: result.data.duration_minutes,
           amount: result.data.amount,
+          applied_addon_ids,
           comment: commentPayload,
         });
         setShowAddCustomerModal(true);
@@ -185,6 +323,8 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
         setDurationMinutes('');
         setAmount('');
         setComment('');
+        setAddonQuantities({});
+        setAmountDirty(false);
       }
     } catch (err) {
       if (err instanceof ClientApiError) {
@@ -221,6 +361,7 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           setDurationMinutes={setDurationMinutes}
           amount={amount}
           setAmount={setAmount}
+          onAmountUserEdit={handleAmountUserEdit}
           comment={comment}
           setComment={setComment}
           errors={errors}
@@ -228,6 +369,21 @@ export function IncomeForm({ serviceTypes, incomeId, initialData }: IncomeFormPr
           isEdit={isEdit}
           isLoadingServiceTypes={isLoadingServiceTypes}
           serviceTypesCount={effectiveServiceTypes.length}
+          addonsPanel={
+            serviceTypeId
+              ? {
+                  eligibleAddons,
+                  addonQuantities,
+                  onQtyChange: handleAddonQtyChange,
+                  baseAmount,
+                  addonsTotal,
+                  suggestedTotal,
+                  amountTouched: amountDirty,
+                  onSyncPrice: handleSyncPrice,
+                  isLoading: loadingAddons,
+                }
+              : null
+          }
         />
       </form>
 

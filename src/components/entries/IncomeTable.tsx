@@ -10,14 +10,32 @@ import type { IncomeEntry, ServiceType } from '@/types';
 interface IncomeTableProps {
   entries: IncomeEntry[];
   serviceTypes: ServiceType[];
+  addonNameById: Map<number, string>;
   isLoading: boolean;
   onDelete: (id: number) => void;
 }
 
 const SKELETON_ROWS = 5;
-const COL_COUNT = 7;
+const COL_COUNT = 8;
 
-export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: IncomeTableProps) {
+function formatAppliedAddons(
+  ids: number[] | undefined,
+  nameById: Map<number, string>
+): string {
+  if (!ids || ids.length === 0) return '—';
+  const counts = new Map<number, number>();
+  for (const id of ids) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  const parts: string[] = [];
+  for (const [id, n] of counts) {
+    const label = nameById.get(id) ?? `#${id}`;
+    parts.push(n > 1 ? `${label}×${n}` : label);
+  }
+  return parts.join('، ');
+}
+
+export function IncomeTable({ entries, serviceTypes, addonNameById, isLoading, onDelete }: IncomeTableProps) {
   const getServiceTypeName = (id: number) =>
     serviceTypes.find((st) => st.id === id)?.name ?? String(id);
   return (
@@ -30,6 +48,7 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.serviceType}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.durationMin}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted text-end">{t.entries.amount}</th>
+            <th scope="col" className="py-3 px-4 font-medium text-text-muted max-w-[160px]">{t.entries.addons}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted max-w-[200px]">{t.entries.comment}</th>
             <th scope="col" className="py-3 px-4 font-medium text-text-muted">{t.entries.actions}</th>
           </tr>
@@ -65,6 +84,11 @@ export function IncomeTable({ entries, serviceTypes, isLoading, onDelete }: Inco
                 <td className="py-3 px-4 text-text-primary">{entry.duration_minutes}</td>
                 <td className="py-3 px-4 text-text-primary text-end font-mono">
                   {formatAmount(entry.amount)}
+                </td>
+                <td className="py-3 px-4 text-text-secondary text-[13px] max-w-[160px] leading-snug">
+                  <span className="line-clamp-2" title={formatAppliedAddons(entry.applied_addon_ids, addonNameById)}>
+                    {formatAppliedAddons(entry.applied_addon_ids, addonNameById)}
+                  </span>
                 </td>
                 <td className="py-3 px-4 text-text-secondary max-w-[200px]">
                   {entry.comment ? (

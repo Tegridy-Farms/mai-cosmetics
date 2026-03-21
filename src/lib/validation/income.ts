@@ -9,6 +9,9 @@ export const IncomeEntrySchema = z.object({
   date: z.string().regex(dateRegex, 'Date must be in YYYY-MM-DD format'),
   duration_minutes: z.number().int().positive(),
   amount: z.number().positive(),
+  applied_addon_ids: z
+    .union([z.array(z.number().int().positive()), z.null(), z.undefined()])
+    .transform((v): number[] => (v == null ? [] : v)),
   comment: z
     .union([z.string().max(2000), z.null()])
     .optional()
